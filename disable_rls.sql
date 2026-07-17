@@ -1,0 +1,9 @@
+alter table users disable row level security;
+alter table rooms disable row level security;
+alter table room_members disable row level security;
+alter table messages disable row level security;
+alter table flashcards disable row level security;
+alter table quiz_attempts disable row level security;
+alter table study_sessions disable row level security;
+alter table badges disable row level security;
+alter table study_plans disable row level security;
