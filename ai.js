@@ -1,33 +1,39 @@
-// AI helper — uses Google Gemini (free tier)
-// Get your free key at https://aistudio.google.com
+// AI helper — uses OpenAI ChatGPT
 const https = require('https');
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const MODEL = 'gemini-1.5-flash';
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 async function callGemini(prompt) {
-  if (!GEMINI_KEY || GEMINI_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-    return { error: 'No AI API key configured. Add GEMINI_API_KEY to .env' };
+  if (!OPENAI_KEY) {
+    return { error: 'No AI API key configured. Add OPENAI_API_KEY to .env' };
   }
 
   const body = JSON.stringify({
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
+    model: MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.7,
+    max_tokens: 1500,
   });
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const req = https.request({
-      hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
+      hostname: 'api.openai.com',
+      path: '/v1/chat/completions',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_KEY}`,
+        'Content-Length': Buffer.byteLength(body),
+      },
     }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
           const json = JSON.parse(data);
-          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (json.error) return resolve({ error: json.error.message });
+          const text = json.choices?.[0]?.message?.content;
           resolve({ text: text || 'No response from AI.' });
         } catch {
           resolve({ error: 'Failed to parse AI response.' });
