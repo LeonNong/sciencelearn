@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+// Fallback: ensure env vars are set even if dotenv doesn't load on Render
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || '';
+process.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+
+console.log('ENV CHECK - SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'MISSING');
+console.log('ENV CHECK - SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'MISSING');
+console.log('ENV CHECK - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'MISSING');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
