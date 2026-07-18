@@ -109,7 +109,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.is_admin }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email, avatarColor: user.avatar_color, isAdmin: user.is_admin, xp: user.xp, level: user.level, streak } });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { console.error('Login error:', e.message, e.stack); res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
