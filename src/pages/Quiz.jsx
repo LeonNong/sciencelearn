@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
 const SUBJECTS = ['Biology', 'Chemistry', 'Physics']
@@ -6,15 +6,20 @@ const DIFFICULTIES = ['easy', 'medium', 'hard']
 const TYPES = ['mixed', 'mcq', 'short']
 
 export default function Quiz() {
-  const [step, setStep] = useState('setup') // setup | quiz | results
+  const [step, setStep] = useState('setup')
   const [config, setConfig] = useState({ subject: 'Biology', topic: '', difficulty: 'medium', count: 5, type: 'mixed' })
   const [questions, setQuestions] = useState([])
   const [answers, setAnswers] = useState({})
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [remaining, setRemaining] = useState(null)
 
   const set = (k, v) => setConfig(c => ({ ...c, [k]: v }))
+
+  useEffect(() => {
+    api.aiUsage().then(u => setRemaining(u.quiz_generate?.remaining ?? null)).catch(() => {})
+  }, [])
 
   async function generate() {
     if (!config.topic.trim()) return setError('Please enter a topic')
@@ -24,6 +29,7 @@ export default function Quiz() {
       setQuestions(res.questions)
       setAnswers({})
       setStep('quiz')
+      setRemaining(r => r !== null ? r - 1 : null)
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -42,7 +48,17 @@ export default function Quiz() {
 
   if (step === 'setup') return (
     <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">🧪 Quiz Generator</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">🧪 Quiz Generator</h1>
+        {remaining !== null && (
+          <span className={`text-sm px-3 py-1 rounded-full font-medium
+            ${remaining <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+            : remaining <= 3 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
+            {remaining} / 5 quizzes left today
+          </span>
+        )}
+      </div>
       <div className="card space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>

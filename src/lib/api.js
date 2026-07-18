@@ -41,6 +41,8 @@ export const api = {
   getPlans: () => req('/planner'),
   // Sessions
   logSession: (d) => post('/sessions', d),
+  // AI Usage
+  aiUsage: () => req('/ai/usage'),
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),

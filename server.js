@@ -58,6 +58,42 @@ function authMiddleware(req, res, next) {
   catch { res.status(401).json({ error: 'Invalid token' }); }
 }
 
+// ==================== AI RATE LIMITING ====================
+// In-memory store: { userId_action_date: count }
+const aiUsage = {};
+const AI_LIMITS = { tutor: 20, quiz_generate: 5, flashcard_generate: 10, planner: 3 };
+
+function getToday() { return new Date().toISOString().slice(0, 10); }
+
+function checkAiLimit(action) {
+  return (req, res, next) => {
+    const key = `${req.user.id}_${action}_${getToday()}`;
+    const used = aiUsage[key] || 0;
+    const limit = AI_LIMITS[action];
+    if (used >= limit) {
+      return res.status(429).json({
+        error: `Daily limit reached. You can use ${action.replace('_', ' ')} ${limit} times per day. Resets at midnight.`,
+        used, limit, remaining: 0,
+      });
+    }
+    aiUsage[key] = used + 1;
+    res.setHeader('X-AI-Used', aiUsage[key]);
+    res.setHeader('X-AI-Limit', limit);
+    res.setHeader('X-AI-Remaining', limit - aiUsage[key]);
+    next();
+  };
+}
+
+app.get('/api/ai/usage', authMiddleware, (req, res) => {
+  const today = getToday();
+  const usage = {};
+  for (const [action, limit] of Object.entries(AI_LIMITS)) {
+    const used = aiUsage[`${req.user.id}_${action}_${today}`] || 0;
+    usage[action] = { used, limit, remaining: limit - used };
+  }
+  res.json(usage);
+});
+
 async function awardXP(userId, amount) {
   try {
     const user = await db.getUserById(userId);
@@ -151,7 +187,7 @@ app.get('/api/dashboard', authMiddleware, async (req, res) => {
 
 // ==================== AI TUTOR ====================
 
-app.post('/api/ai/tutor', authMiddleware, async (req, res) => {
+app.post('/api/ai/tutor', authMiddleware, checkAiLimit('tutor'), async (req, res) => {
   const { question, subject, difficulty = 'intermediate' } = req.body;
   if (!question) return res.status(400).json({ error: 'Question required' });
   const prompt = `You are an expert ${subject || 'Science'} tutor for high school students.
@@ -166,7 +202,7 @@ Question: ${question}`;
 
 // ==================== QUIZ ====================
 
-app.post('/api/ai/quiz/generate', authMiddleware, async (req, res) => {
+app.post('/api/ai/quiz/generate', authMiddleware, checkAiLimit('quiz_generate'), async (req, res) => {
   const { subject, topic, difficulty = 'medium', count = 5, type = 'mixed' } = req.body;
   if (!subject || !topic) return res.status(400).json({ error: 'Subject and topic required' });
   const prompt = `Generate ${count} ${difficulty} difficulty ${type === 'mixed' ? 'mixed (MCQ and short answer)' : type} questions about "${topic}" in ${subject} for high school students.
@@ -236,7 +272,7 @@ app.post('/api/flashcards', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/flashcards/generate', authMiddleware, async (req, res) => {
+app.post('/api/flashcards/generate', authMiddleware, checkAiLimit('flashcard_generate'), async (req, res) => {
   const { subject, topic, count = 5 } = req.body;
   const prompt = `Generate ${count} flashcards for "${topic}" in ${subject} for high school students.
 Return ONLY valid JSON: { "flashcards": [{ "question": "...", "answer": "..." }] }`;
@@ -273,7 +309,7 @@ app.delete('/api/flashcards/:id', authMiddleware, async (req, res) => {
 
 // ==================== STUDY PLANNER ====================
 
-app.post('/api/planner/generate', authMiddleware, async (req, res) => {
+app.post('/api/planner/generate', authMiddleware, checkAiLimit('planner'), async (req, res) => {
   const { subject, examDate, hoursPerDay = 2, weakTopics } = req.body;
   if (!subject || !examDate) return res.status(400).json({ error: 'Subject and exam date required' });
   const daysLeft = Math.ceil((new Date(examDate) - new Date()) / 86400000);
