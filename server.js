@@ -86,6 +86,9 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt:', email);
+    console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'set' : 'MISSING');
+    console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'set' : 'MISSING');
     const user = await db.getUserByEmail(email);
     if (!user || !bcrypt.compareSync(password, user.password)) return res.status(400).json({ error: 'Invalid email or password' });
 
