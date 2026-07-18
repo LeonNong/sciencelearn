@@ -21,11 +21,23 @@ const app = express();
 const server = http.createServer(app);
 const JWT_SECRET = process.env.JWT_SECRET || 'sciencelearn-secret';
 const CLIENT_ORIGINS = process.env.CLIENT_URL
-  ? [process.env.CLIENT_URL]
+  ? process.env.CLIENT_URL.split(',').map(s => s.trim())
   : ['http://localhost:5175', 'http://localhost:5176', 'http://localhost:5173'];
 
-const io = new Server(server, { cors: { origin: CLIENT_ORIGINS, methods: ['GET', 'POST'] } });
-app.use(cors({ origin: CLIENT_ORIGINS }));
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (CLIENT_ORIGINS.some(o => origin === o || origin.endsWith('.vercel.app'))) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+};
+
+const io = new Server(server, { cors: { origin: (origin, cb) => cb(null, true), methods: ['GET', 'POST'] } });
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 
 const AVATAR_COLORS = ['#3B82F6','#8B5CF6','#10B981','#F59E0B','#EF4444','#EC4899','#06B6D4','#84CC16'];
