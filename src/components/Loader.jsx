@@ -1,6 +1,6 @@
 export default function Loader({ className = '' }) {
   return (
-    <div className={`flex items-center justify-center mt-[300px] ${className}`}>
+    <div className={`flex flex-col items-center justify-center gap-3 ${className}`} style={{ marginTop: '150px' }}>
       <svg viewBox="0 0 32 32" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="3">
         <clipPath id="ring-clip">
           <polygon points="0 0,32 0,32 32,0 32,0 30,14 16.1,0 16.1" />
@@ -23,6 +23,7 @@ export default function Loader({ className = '' }) {
           @keyframes worm2-move { from { stroke-dashoffset: 16.492; } to { stroke-dashoffset: -62.045; } }
         `}</style>
       </svg>
+      <span className="text-sm text-gray-400 dark:text-gray-500 tracking-widest">Loading...</span>
     </div>
   )
 }
