@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import Loader from '../components/Loader'
 
 const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Chemistry', 'Other']
 const DIFF_LABELS = ['', 'Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard']
@@ -139,7 +140,7 @@ function StudyModal({ topic, onClose, onQuizDone }) {
         <div className="flex-1 overflow-y-auto p-5">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <div className="text-4xl animate-spin">🤖</div>
+              <Loader />
               <p className="text-gray-500 text-sm">LARE is generating personalised content for {topic.topic}...</p>
             </div>
           )}
@@ -278,7 +279,7 @@ export default function LARE() {
 
   const top = topics[0]
 
-  if (loading) return <div className="flex justify-center py-20 text-4xl animate-spin">⚡</div>
+  if (loading) return <Loader className="py-20" />
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

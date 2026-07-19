@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import Loader from '../components/Loader'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import { Chart, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from 'chart.js'
 
@@ -18,7 +19,7 @@ export default function Dashboard() {
     api.dashboard().then(setData).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div className="flex justify-center py-20 text-4xl animate-spin">🔬</div>
+  if (loading) return <Loader className="py-20" />
 
   const quizBySubject = {}
   data?.quizzes?.forEach(q => {

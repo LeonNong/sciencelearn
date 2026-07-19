@@ -73,7 +73,7 @@ export default function Scanner() {
       {ocrLoading && (
         <div className="mt-4 card">
           <div className="flex items-center gap-3">
-            <div className="animate-spin text-xl">🔍</div>
+            <div className="w-6 h-6"><svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3"><g transform="rotate(90,16,16)"><g opacity="0.2"><circle r="3" cx="6.5" cy="16" strokeDasharray="14.737 4.712"/><circle r="9.5" cx="19" cy="16"/></g><g strokeLinecap="round"><circle r="3" cx="6.5" cy="16" strokeDasharray="14.137 64.4" style={{animation:'worm1-move 1.5s cubic-bezier(0.37,0,0.63,1) infinite'}}/><circle r="9.5" cx="19" cy="16" strokeDasharray="14.137 64.4" strokeDashoffset="14.137" transform="rotate(180,19,16)" style={{animation:'worm2-move 1.5s cubic-bezier(0.37,0,0.63,1) infinite'}}/></g></g></svg></div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Extracting text... {progress}%</p>
               <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-1">
