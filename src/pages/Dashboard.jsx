@@ -32,7 +32,7 @@ export default function Dashboard() {
       {/* Welcome */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-6 text-white">
         <h1 className="text-2xl font-bold">Welcome back, {user?.username}! 👋</h1>
-        <p className="text-primary-100 mt-1">Ready to learn something new today?</p>
+        <p className="text-primary-100 mt-1">LARE has analysed your topics — ready to study smarter?</p>
         <div className="flex flex-wrap gap-4 mt-4">
           {[
             { icon: '⭐', label: 'XP', val: user?.xp || 0 },
@@ -53,12 +53,13 @@ export default function Dashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
+          { to: '/lare',       icon: '⚡', label: 'LARE', color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
           { to: '/tutor',      icon: '🤖', label: 'Ask AI', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
           { to: '/quiz',       icon: '🧪', label: 'Take Quiz', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
           { to: '/flashcards', icon: '🃏', label: 'Flashcards', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
           { to: '/planner',    icon: '📅', label: 'Planner', color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
           { to: '/scanner',    icon: '📷', label: 'Scan HW', color: 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300' },
-          { to: '/chat',       icon: '💬', label: 'Chat', color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
+          { to: '/chat',       icon: '💬', label: 'Chat', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
         ].map(({ to, icon, label, color }) => (
           <Link key={to} to={to} className={`card flex flex-col items-center gap-2 py-4 hover:shadow-md transition cursor-pointer ${color}`}>
             <span className="text-2xl">{icon}</span>

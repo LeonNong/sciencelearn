@@ -43,6 +43,13 @@ export const api = {
   logSession: (d) => post('/sessions', d),
   // AI Usage
   aiUsage: () => req('/ai/usage'),
+  // LARE
+  getLareTopics: () => req('/lare'),
+  createLareTopic: (d) => post('/lare', d),
+  updateLareTopic: (id, d) => patch(`/lare/${id}`, d),
+  deleteLareTopic: (id) => del(`/lare/${id}`),
+  generateLareContent: (id) => post(`/lare/${id}/generate`, {}),
+  recordLareQuiz: (id, d) => post(`/lare/${id}/quiz-result`, d),
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),

@@ -155,6 +155,26 @@ const db = {
     const { data, error } = await supabase.from('study_plans').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     check(error, 'getStudyPlans'); return data;
   },
+
+  // ── LARE TOPICS ────────────────────────────────────────
+  async getLareTopics(userId) {
+    const { data, error } = await supabase.from('lare_topics').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    check(error, 'getLareTopics'); return data;
+  },
+  async createLareTopic(topic) {
+    const { data, error } = await supabase.from('lare_topics').insert(topic).select().single();
+    check(error, 'createLareTopic'); return data;
+  },
+  async updateLareTopic(id, userId, updates) {
+    const { data, error } = await supabase.from('lare_topics')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id).eq('user_id', userId).select().single();
+    check(error, 'updateLareTopic'); return data;
+  },
+  async deleteLareTopic(id, userId) {
+    const { error } = await supabase.from('lare_topics').delete().eq('id', id).eq('user_id', userId);
+    check(error, 'deleteLareTopic');
+  },
 };
 
 module.exports = db;

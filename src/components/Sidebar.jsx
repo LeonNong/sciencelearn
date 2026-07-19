@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth'
 
 const nav = [
   { to: '/',          icon: '📊', label: 'Dashboard' },
+  { to: '/lare',      icon: '⚡', label: 'LARE' },
   { to: '/tutor',     icon: '🤖', label: 'AI Tutor' },
   { to: '/quiz',      icon: '🧪', label: 'Quiz' },
   { to: '/flashcards',icon: '🃏', label: 'Flashcards' },
@@ -22,10 +23,10 @@ export default function Sidebar({ open, onClose }) {
     `}>
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-gray-200 dark:border-gray-700">
-        <span className="text-2xl">🔬</span>
+        <span className="text-2xl">⚡</span>
         <div>
-          <div className="font-bold text-gray-900 dark:text-white text-sm">ScienceLearn</div>
-          <div className="text-xs text-primary-500 font-medium">AI Powered</div>
+          <div className="font-bold text-gray-900 dark:text-white text-sm">LearnWay</div>
+          <div className="text-xs text-primary-500 font-medium">Adaptive · AI Powered</div>
         </div>
       </div>
 

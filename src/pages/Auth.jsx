@@ -27,9 +27,9 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-700 to-science-chem flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🔬</div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ScienceLearn AI</h1>
-          <p className="text-gray-500 text-sm mt-1">Your AI-powered science study companion</p>
+          <div class="text-5xl mb-3">⚡</div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">LearnWay</h1>
+          <p className="text-gray-500 text-sm mt-1">Adaptive AI-powered revision platform</p>
         </div>
 
         <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-6">
@@ -64,7 +64,7 @@ export default function Auth() {
         </form>
 
         <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-xs text-blue-700 dark:text-blue-300 text-center">
-          🎓 Science Fair Project — Biology · Chemistry · Physics
+          ⚡ Powered by LARE — LearnWay Adaptive Revision Engine
         </div>
       </div>
     </div>
