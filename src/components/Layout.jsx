@@ -2,13 +2,13 @@ import { Outlet } from 'react-router-dom'
 import { useState } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
+import FeedbackButton from './FeedbackButton'
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -19,6 +19,7 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+      <FeedbackButton />
     </div>
   )
 }
