@@ -1,19 +1,24 @@
 import { useState } from 'react'
+import { api } from '../lib/api'
 
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault()
     if (!text.trim()) return
-    // Store locally or send to a mailto / endpoint
-    const existing = JSON.parse(localStorage.getItem('lw_feedback') || '[]')
-    existing.push({ text, ts: new Date().toISOString() })
-    localStorage.setItem('lw_feedback', JSON.stringify(existing))
-    setSent(true)
-    setTimeout(() => { setOpen(false); setSent(false); setText('') }, 1800)
+    setLoading(true); setError('')
+    try {
+      await api.submitFeedback(text)
+      setSent(true)
+      setTimeout(() => { setOpen(false); setSent(false); setText('') }, 1800)
+    } catch (err) {
+      setError(err.message)
+    } finally { setLoading(false) }
   }
 
   return (
@@ -54,8 +59,9 @@ export default function FeedbackButton() {
                     onChange={e => setText(e.target.value)}
                     autoFocus
                   />
-                  <button type="submit" disabled={!text.trim()} className="btn-primary w-full py-2.5">
-                    Send Feedback
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  <button type="submit" disabled={!text.trim() || loading} className="btn-primary w-full py-2.5">
+                    {loading ? 'Sending...' : 'Send Feedback'}
                   </button>
                 </form>
               </>

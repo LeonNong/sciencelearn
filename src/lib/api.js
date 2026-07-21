@@ -50,6 +50,8 @@ export const api = {
   deleteLareTopic: (id) => del(`/lare/${id}`),
   generateLareContent: (id) => post(`/lare/${id}/generate`, {}),
   recordLareQuiz: (id, d) => post(`/lare/${id}/quiz-result`, d),
+  // Feedback
+  submitFeedback: (text) => post('/feedback', { text }),
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),

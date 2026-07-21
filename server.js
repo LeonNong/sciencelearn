@@ -496,6 +496,24 @@ app.post('/api/lare/:id/quiz-result', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ==================== FEEDBACK ====================
+
+app.post('/api/feedback', authMiddleware, async (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'Feedback text required' });
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { error } = await supabase.from('feedback').insert({
+      user_id: req.user.id,
+      username: req.user.username,
+      text: text.trim(),
+    });
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ==================== CHAT ROOMS ====================
 
 app.get('/api/rooms', authMiddleware, async (req, res) => {
