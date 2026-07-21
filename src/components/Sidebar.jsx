@@ -9,6 +9,7 @@ const nav = [
   { to: '/flashcards',icon: '🃏', label: 'Flashcards' },
   { to: '/planner',   icon: '📅', label: 'Study Planner' },
   { to: '/scanner',   icon: '📷', label: 'OCR Scanner' },
+  { to: '/memory',    icon: '⌨️', label: 'Memory Typing' },
   { to: '/chat',      icon: '💬', label: 'Chat Rooms' },
 ]
 

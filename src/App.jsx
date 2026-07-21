@@ -11,6 +11,7 @@ import Planner from './pages/Planner'
 import Chat from './pages/Chat'
 import Scanner from './pages/Scanner'
 import LARE from './pages/LARE'
+import MemoryType from './pages/MemoryType'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="planner" element={<Planner />} />
         <Route path="chat" element={<Chat />} />
         <Route path="scanner" element={<Scanner />} />
+        <Route path="memory" element={<MemoryType />} />
       </Route>
     </Routes>
   )
