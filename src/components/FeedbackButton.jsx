@@ -26,13 +26,10 @@ export default function FeedbackButton() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-3 py-2.5 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 group"
+        className="fixed bottom-5 right-5 z-40 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 w-12 h-12 text-xl"
         title="Want a new feature? Feedback now!"
       >
-        <span>💡</span>
-        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap text-sm">
-          Feedback
-        </span>
+        💡
       </button>
 
       {/* Modal */}
