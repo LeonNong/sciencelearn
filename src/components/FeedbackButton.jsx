@@ -26,7 +26,7 @@ export default function FeedbackButton() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition hover:scale-105 active:scale-95"
+        className="fixed bottom-20 right-5 z-40 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition hover:scale-105 active:scale-95"
       >
         💡 <span>Want a new feature? Feedback now!</span>
       </button>
