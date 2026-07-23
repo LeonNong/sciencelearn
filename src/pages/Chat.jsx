@@ -70,6 +70,15 @@ export default function Chat() {
     } catch (err) { setError(err.message) }
   }
 
+  async function deleteRoom(room) {
+    if (!confirm(`Delete "${room.name}"? This cannot be undone.`)) return
+    try {
+      await api.deleteRoom(room.id)
+      setRooms(r => r.filter(x => x.id !== room.id))
+      if (activeRoom?.id === room.id) { setActiveRoom(null); setMessages([]) }
+    } catch (err) { alert(err.message) }
+  }
+
   async function joinRoom(e) {
     e.preventDefault(); setError('')
     try {
@@ -97,12 +106,19 @@ export default function Chat() {
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
           {rooms.map(r => (
-            <button key={r.id} onClick={() => selectRoom(r)}
-              className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-left text-sm transition
-                ${activeRoom?.id === r.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-              <span className="text-gray-400">#</span>
-              <span className="truncate">{r.name}</span>
-            </button>
+            <div key={r.id} className={`flex items-center gap-1 px-2 py-2 rounded-lg text-sm transition group
+              ${activeRoom?.id === r.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+              <button onClick={() => selectRoom(r)} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+                <span className="text-gray-400">#</span>
+                <span className="truncate">{r.name}</span>
+              </button>
+              {(user?.isAdmin || r.owner_id === user?.id) && (
+                <button onClick={() => deleteRoom(r)} title="Delete room"
+                  className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition text-xs px-1 flex-shrink-0">
+                  🗑
+                </button>
+              )}
+            </div>
           ))}
         </div>
         <div className="p-3 border-t border-gray-200 dark:border-gray-700">

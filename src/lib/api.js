@@ -55,6 +55,7 @@ export const api = {
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),
+  deleteRoom: (id) => del(`/rooms/${id}`),
   joinRoom: (inviteCode) => post('/rooms/join', { inviteCode }),
   getMessages: (id) => req(`/rooms/${id}/messages`),
   getMembers: (id) => req(`/rooms/${id}/members`),

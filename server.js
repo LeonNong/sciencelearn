@@ -547,6 +547,18 @@ app.post('/api/rooms', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/rooms/:id', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data: room } = await supabase.from('rooms').select('owner_id').eq('id', req.params.id).single();
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    if (room.owner_id !== req.user.id && !req.user.isAdmin) return res.status(403).json({ error: 'Only the room owner or admin can delete this room' });
+    await supabase.from('rooms').delete().eq('id', req.params.id);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/rooms/join', authMiddleware, async (req, res) => {
   try {
     const room = await db.getRoomByInviteCode(req.body.inviteCode?.toUpperCase());
