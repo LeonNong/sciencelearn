@@ -32,7 +32,8 @@ export default function MemoryType() {
   }, [step, startTime])
 
   function focusInput() {
-    setTimeout(() => inputRef.current?.focus(), 100)
+    // iOS Safari requires focus() to be called synchronously in a user gesture
+    inputRef.current?.focus()
   }
 
   function startGame() {
@@ -46,7 +47,8 @@ export default function MemoryType() {
     setStartTime(Date.now())
     setElapsed(0)
     setStep('game')
-    focusInput()
+    // focus immediately (called from button click — valid user gesture on iOS)
+    inputRef.current?.focus()
   }
 
   function doRestart() {
@@ -55,7 +57,7 @@ export default function MemoryType() {
     setHintChar(false)
     setRestarts(r => r + 1)
     setStep('game')
-    focusInput()
+    inputRef.current?.focus()
   }
 
   function flashHint() {
@@ -68,13 +70,21 @@ export default function MemoryType() {
     if (step !== 'game') return
     const val = e.target.value
     if (!val) return
+    // Process every character in the value (handles paste & autocomplete)
+    const ch = val[val.length - 1]
+    // Clear the input so iOS doesn't accumulate text
     e.target.value = ''
-    processChar(val[val.length - 1])
+    processChar(ch)
   }
 
   function handleKeyDown(e) {
     if (step !== 'game') return
     if (e.key === 'Enter') { e.preventDefault(); processChar('\n') }
+    // On iOS, keydown fires with the actual key for hardware keyboards
+    if (e.key && e.key.length === 1) {
+      e.preventDefault()
+      processChar(e.key)
+    }
   }
 
   function processChar(typed) {
@@ -215,7 +225,7 @@ export default function MemoryType() {
       </div>
       <div
         className={`card font-mono text-lg leading-relaxed whitespace-pre-wrap cursor-text select-none transition ${flash === 'wrong' ? 'ring-2 ring-red-400' : flash === 'correct' ? 'ring-2 ring-green-400' : ''}`}
-        onClick={focusInput}
+        onClick={() => inputRef.current?.focus()}
       >
         {renderGame()}
         <span className="inline-block w-0.5 h-5 bg-primary-500 animate-pulse ml-0.5 align-middle" />
@@ -229,15 +239,19 @@ export default function MemoryType() {
         ref={inputRef}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        className="opacity-0 absolute w-0 h-0"
+        className="opacity-0 fixed top-0 left-0 w-1 h-1 pointer-events-none"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="none"
         spellCheck="false"
         type="text"
         inputMode="text"
+        readOnly={false}
       />
-      <button onClick={focusInput} className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-400 text-sm lg:hidden">
+      <button
+        onClick={() => inputRef.current?.focus()}
+        className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-400 text-sm lg:hidden"
+      >
         Tap here to type ⌨️
       </button>
     </div>
