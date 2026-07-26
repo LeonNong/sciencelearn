@@ -591,6 +591,8 @@ app.get('/api/rooms/:id/members', authMiddleware, async (req, res) => {
 
 // ==================== SOCKET.IO ====================
 
+app.get('/api/ping', (req, res) => res.json({ ok: true, ts: Date.now() }));
+
 function verifyToken(token) {
   try { return jwt.verify(token, JWT_SECRET); } catch { return null; }
 }
@@ -635,4 +637,15 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3002;
-server.listen(PORT, () => console.log(`ScienceLearn server at http://localhost:${PORT}`));
+server.listen(PORT, () => {
+  console.log(`LearnWay server at http://localhost:${PORT}`)
+
+  // Keep Render free tier alive by self-pinging every 10 minutes
+  if (process.env.RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+      const url = process.env.RENDER_EXTERNAL_URL + '/api/ping'
+      const https = require('https')
+      https.get(url, () => {}).on('error', () => {})
+    }, 10 * 60 * 1000)
+  }
+})
