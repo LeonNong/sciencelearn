@@ -18,31 +18,35 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <aside className={`
-      fixed lg:static z-30 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
-      flex flex-col transition-transform duration-200
+      fixed lg:static z-30 h-full w-64 flex flex-col transition-transform duration-200
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-    `}>
+    `} style={{ background: '#1a1a2e', borderRight: '3px solid #3b82f6' }}>
       {/* Logo */}
-      <div className="h-16 flex items-center gap-3 px-5 border-b border-gray-200 dark:border-gray-700">
+      <div className="h-16 flex items-center gap-3 px-5" style={{ borderBottom: '3px solid #3b82f6' }}>
         <span className="text-2xl">⚡</span>
         <div>
-          <div className="font-bold text-gray-900 dark:text-white text-sm">LearnWay</div>
-          <div className="text-xs text-primary-500 font-medium">Adaptive · AI Powered</div>
+          <div className="font-bold text-white text-xs" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '2px 2px 0 #1d4ed8' }}>LearnWay</div>
+          <div className="text-xs mt-1" style={{ color: '#60a5fa', fontSize: '8px', fontFamily: "'Press Start 2P', monospace" }}>ADAPTIVE AI</div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {nav.map(({ to, icon, label }) => (
           <NavLink
             key={to} to={to} end={to === '/'}
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
+              `flex items-center gap-3 px-3 py-2.5 text-xs font-medium transition cursor-pointer
               ${isActive
-                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'}`
+                ? 'text-white'
+                : 'text-gray-400 hover:text-white'}`
             }
+            style={({ isActive }) => isActive ? {
+              background: '#0f0f1a',
+              borderLeft: '4px solid #3b82f6',
+              boxShadow: 'inset 0 0 0 1px #3b82f620',
+            } : {}}
           >
             <span>{icon}</span>
             <span>{label}</span>
@@ -52,15 +56,15 @@ export default function Sidebar({ open, onClose }) {
 
       {/* User panel */}
       {user && (
-        <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3 p-2 rounded-lg">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-              style={{ backgroundColor: user.avatarColor }}>
+        <div className="p-3" style={{ borderTop: '3px solid #3b82f6' }}>
+          <div className="flex items-center gap-3 p-2">
+            <div className="w-9 h-9 flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+              style={{ backgroundColor: user.avatarColor, border: '2px solid #fff', imageRendering: 'pixelated' }}>
               {user.username[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.username}</div>
-              <div className="text-xs text-gray-500">Lv.{user.level} · {user.xp} XP</div>
+              <div className="text-white truncate" style={{ fontSize: '9px', fontFamily: "'Press Start 2P', monospace" }}>{user.username}</div>
+              <div className="mt-1" style={{ fontSize: '8px', color: '#60a5fa' }}>LV.{user.level} · {user.xp}XP</div>
             </div>
             <button onClick={logout} className="text-gray-400 hover:text-red-500 transition text-sm" title="Logout">⏏</button>
           </div>

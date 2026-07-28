@@ -1,33 +1,32 @@
 import { useAuth } from '../lib/auth'
-import { useTheme } from '../lib/theme'
 
 export default function Topbar({ onMenuClick }) {
   const { user } = useAuth()
-  const { dark, toggle } = useTheme()
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 gap-4 flex-shrink-0">
-      <button className="lg:hidden text-gray-500 hover:text-gray-900 dark:hover:text-white p-1" onClick={onMenuClick}>
-        ☰
-      </button>
+    <header className="h-14 flex items-center px-4 gap-4 flex-shrink-0"
+      style={{ background: '#1a1a2e', borderBottom: '3px solid #3b82f6' }}>
+      <button className="lg:hidden text-gray-400 hover:text-white p-1 text-lg" onClick={onMenuClick}>☰</button>
       <div className="flex-1" />
-
       {user && (
-        <div className="flex items-center gap-2">
-          <span className="text-yellow-500 text-sm">🔥 {user.streak} day streak</span>
-          <div className="hidden sm:flex items-center gap-1.5 bg-primary-50 dark:bg-primary-900/30 px-3 py-1 rounded-full">
-            <span className="text-xs font-bold text-primary-600 dark:text-primary-400">Lv.{user.level}</span>
-            <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${(user.xp % 100)}%` }} />
+        <div className="flex items-center gap-4">
+          <span style={{ fontSize: '9px', color: '#fbbf24', fontFamily: "'Press Start 2P', monospace" }}>
+            🔥 {user.streak}
+          </span>
+          <div className="hidden sm:flex items-center gap-2"
+            style={{ border: '2px solid #3b82f6', padding: '4px 10px', background: '#0f0f1a' }}>
+            <span style={{ fontSize: '9px', color: '#60a5fa', fontFamily: "'Press Start 2P', monospace" }}>
+              LV.{user.level}
+            </span>
+            <div style={{ width: 64, height: 8, background: '#374151', border: '1px solid #4b5563' }}>
+              <div style={{ width: `${user.xp % 100}%`, height: '100%', background: '#3b82f6' }} />
             </div>
-            <span className="text-xs text-gray-500">{user.xp} XP</span>
+            <span style={{ fontSize: '8px', color: '#9ca3af', fontFamily: "'Press Start 2P', monospace" }}>
+              {user.xp}XP
+            </span>
           </div>
         </div>
       )}
-
-      <button onClick={toggle} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-        {dark ? '☀️' : '🌙'}
-      </button>
     </header>
   )
 }
