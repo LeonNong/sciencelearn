@@ -28,7 +28,9 @@ export default function Auth() {
       {/* Left decorative panel - hidden on mobile */}
       <div className="hidden lg:flex flex-col items-center justify-center flex-1 p-12"
         style={{ borderRight: '3px solid #3b82f6', background: '#1a1a2e' }}>
-        <div style={{ fontSize: 80, marginBottom: 24, imageRendering: 'pixelated' }}>⚡</div>
+        <div style={{ marginBottom: 24, imageRendering: 'pixelated' }}>
+          <img src="/logo.png" alt="LearnWay" style={{ width: 96, height: 96, imageRendering: 'pixelated' }} />
+        </div>
         <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 22, color: '#3b82f6', textShadow: '4px 4px 0 #1d4ed8', marginBottom: 16 }}>
           LearnWay
         </h2>
@@ -53,7 +55,7 @@ export default function Auth() {
       <div className="flex flex-col items-center justify-center flex-1 p-6 lg:p-16">
         {/* Mobile logo */}
         <div className="lg:hidden text-center mb-8">
-          <div style={{ fontSize: 48 }}>⚡</div>
+          <img src="/logo.png" alt="LearnWay" style={{ width: 64, height: 64, imageRendering: 'pixelated', margin: '0 auto' }} />
           <h1 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 16, color: '#3b82f6', textShadow: '3px 3px 0 #1d4ed8', marginTop: 12 }}>
             LearnWay
           </h1>

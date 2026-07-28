@@ -23,7 +23,9 @@ export default function Sidebar({ open, onClose }) {
     `} style={{ background: '#1a1a2e', borderRight: '3px solid #3b82f6' }}>
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5" style={{ borderBottom: '3px solid #3b82f6' }}>
-        <span className="text-2xl">⚡</span>
+        <span className="text-2xl">
+          <img src="/logo.png" alt="logo" style={{ width: 32, height: 32, imageRendering: 'pixelated' }} />
+        </span>
         <div>
           <div className="font-bold text-white text-xs" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '2px 2px 0 #1d4ed8' }}>LearnWay</div>
           <div className="text-xs mt-1" style={{ color: '#60a5fa', fontSize: '8px', fontFamily: "'Press Start 2P', monospace" }}>ADAPTIVE AI</div>
