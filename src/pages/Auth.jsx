@@ -28,8 +28,30 @@ export default function Auth() {
       {/* Left decorative panel - hidden on mobile */}
       <div className="hidden lg:flex flex-col items-center justify-center flex-1 p-12"
         style={{ borderRight: '3px solid #3b82f6', background: '#1a1a2e' }}>
-        <div style={{ marginBottom: 24, imageRendering: 'pixelated' }}>
-          <img src="/logo.png" alt="LearnWay" style={{ width: 96, height: 96, imageRendering: 'pixelated' }} />
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          {/* Pixel book decorations around logo */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 8 }}>
+            {/* Left book stack */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, marginBottom: 8 }}>
+              <div style={{ width: 18, height: 10, background: '#ef4444', border: '2px solid #7f1d1d' }} />
+              <div style={{ width: 22, height: 10, background: '#f59e0b', border: '2px solid #78350f' }} />
+              <div style={{ width: 20, height: 12, background: '#10b981', border: '2px solid #064e3b' }} />
+            </div>
+            {/* Logo center */}
+            <img src="/logo.png" alt="LearnWay" style={{ width: 96, height: 96, imageRendering: 'pixelated' }} />
+            {/* Right book stack */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, marginBottom: 8 }}>
+              <div style={{ width: 20, height: 10, background: '#8b5cf6', border: '2px solid #4c1d95' }} />
+              <div style={{ width: 16, height: 10, background: '#3b82f6', border: '2px solid #1e3a8a' }} />
+              <div style={{ width: 24, height: 12, background: '#ec4899', border: '2px solid #831843' }} />
+            </div>
+          </div>
+          {/* Bottom books (lying flat) */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>
+            <div style={{ width: 28, height: 8, background: '#f59e0b', border: '2px solid #78350f' }} />
+            <div style={{ width: 36, height: 8, background: '#3b82f6', border: '2px solid #1e3a8a' }} />
+            <div style={{ width: 24, height: 8, background: '#10b981', border: '2px solid #064e3b' }} />
+          </div>
         </div>
         <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 22, color: '#3b82f6', textShadow: '4px 4px 0 #1d4ed8', marginBottom: 16 }}>
           LearnWay
