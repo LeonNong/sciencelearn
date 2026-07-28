@@ -14,6 +14,7 @@ const Chat = lazy(() => import('./pages/Chat'))
 const Scanner = lazy(() => import('./pages/Scanner'))
 const LARE = lazy(() => import('./pages/LARE'))
 const MemoryType = lazy(() => import('./pages/MemoryType'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="chat" element={<Chat />} />
           <Route path="scanner" element={<Scanner />} />
           <Route path="memory" element={<MemoryType />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </Suspense>

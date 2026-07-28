@@ -164,7 +164,20 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
     const user = await db.getUserById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user.id, username: user.username, email: user.email, avatarColor: user.avatar_color, isAdmin: user.is_admin, xp: user.xp, level: user.level, streak: user.streak });
+    res.json({ id: user.id, username: user.username, email: user.email, avatarColor: user.avatar_color, isAdmin: user.is_admin, xp: user.xp, level: user.level, streak: user.streak, displayName: user.display_name, school: user.school, grade: user.grade });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/auth/profile', authMiddleware, async (req, res) => {
+  try {
+    const { displayName, school, grade, avatarColor } = req.body;
+    const updates = {};
+    if (displayName !== undefined) updates.display_name = displayName;
+    if (school !== undefined) updates.school = school;
+    if (grade !== undefined) updates.grade = grade;
+    if (avatarColor !== undefined) updates.avatar_color = avatarColor;
+    const user = await db.updateUser(req.user.id, updates);
+    res.json({ id: user.id, username: user.username, email: user.email, avatarColor: user.avatar_color, isAdmin: user.is_admin, xp: user.xp, level: user.level, streak: user.streak, displayName: user.display_name, school: user.school, grade: user.grade });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

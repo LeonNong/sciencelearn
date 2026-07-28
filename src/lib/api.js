@@ -42,6 +42,7 @@ export const api = {
   register: (d) => post('/auth/register', d),
   login: (d) => post('/auth/login', d),
   me: () => req('/auth/me'),
+  updateProfile: (d) => patch('/auth/profile', d),
   // Dashboard
   dashboard: () => req('/dashboard'),
   // AI

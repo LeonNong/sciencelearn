@@ -10,6 +10,7 @@ const nav = [
   { to: '/planner',   icon: '📅', label: 'Study Planner' },
   { to: '/scanner',   icon: '📷', label: 'OCR Scanner' },
   { to: '/memory',    icon: '⌨️', label: 'Memory Typing' },
+  { to: '/settings',  icon: '⚙️', label: 'Settings' },
   { to: '/chat',      icon: '💬', label: 'Chat Rooms' },
 ]
 
