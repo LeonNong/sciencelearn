@@ -15,6 +15,13 @@ async function req(path, options = {}, timeout = 60000) {
       },
     })
     const data = await res.json()
+    if (res.status === 401) {
+      localStorage.removeItem('sl_token')
+      localStorage.removeItem('sl_user')
+      alert('Session expired — please log in again.')
+      window.location.href = '/auth'
+      return
+    }
     if (!res.ok) throw new Error(data.error || 'Request failed')
     return data
   } catch (err) {
