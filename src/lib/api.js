@@ -71,6 +71,11 @@ export const api = {
   recordLareQuiz: (id, d) => post(`/lare/${id}/quiz-result`, d),
   // Feedback
   submitFeedback: (text) => post('/feedback', { text }),
+  // Notes
+  getNotes: () => req('/notes'),
+  createNote: (d) => post('/notes', d),
+  updateNote: (id, d) => patch(`/notes/${id}`, d),
+  deleteNote: (id) => del(`/notes/${id}`),
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),

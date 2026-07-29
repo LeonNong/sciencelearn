@@ -524,6 +524,55 @@ app.post('/api/lare/:id/quiz-result', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ==================== NOTES ====================
+
+app.get('/api/notes', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await supabase.from('notes').select('*')
+      .eq('user_id', req.user.id).order('pinned', { ascending: false }).order('updated_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/notes', authMiddleware, async (req, res) => {
+  const { title, content, subject } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: 'Title required' });
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await supabase.from('notes').insert({
+      user_id: req.user.id, title: title.trim(), content: content || '', subject: subject || 'General'
+    }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/notes/:id', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const updates = { ...req.body, updated_at: new Date().toISOString() };
+    const { data, error } = await supabase.from('notes').update(updates)
+      .eq('id', req.params.id).eq('user_id', req.user.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/notes/:id', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { error } = await supabase.from('notes').delete().eq('id', req.params.id).eq('user_id', req.user.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ==================== FEEDBACK ====================
 
 app.post('/api/feedback', authMiddleware, async (req, res) => {
