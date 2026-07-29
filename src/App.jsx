@@ -16,6 +16,7 @@ const LARE = lazy(() => import('./pages/LARE'))
 const MemoryType = lazy(() => import('./pages/MemoryType'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Notes = lazy(() => import('./pages/Notes'))
+const Grades = lazy(() => import('./pages/Grades'))
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="memory" element={<MemoryType />} />
           <Route path="settings" element={<Settings />} />
           <Route path="notes" element={<Notes />} />
+          <Route path="grades" element={<Grades />} />
         </Route>
       </Routes>
     </Suspense>

@@ -11,6 +11,7 @@ const nav = [
   { to: '/scanner',   icon: '📷', label: 'OCR Scanner' },
   { to: '/memory',    icon: '⌨️', label: 'Memory Typing' },
   { to: '/notes',     icon: '📓', label: 'Notes' },
+  { to: '/grades',    icon: '📈', label: 'Grade Tracker' },
   { to: '/settings',  icon: '⚙️', label: 'Settings' },
   { to: '/chat',      icon: '💬', label: 'Chat Rooms' },
 ]

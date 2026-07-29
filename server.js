@@ -524,6 +524,45 @@ app.post('/api/lare/:id/quiz-result', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ==================== EXAM GRADES ====================
+
+app.get('/api/grades', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await supabase.from('exam_grades').select('*')
+      .eq('user_id', req.user.id).order('date', { ascending: true });
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/grades', authMiddleware, async (req, res) => {
+  const { subject, label, score, date } = req.body;
+  if (!subject || !label || score === undefined || !date) return res.status(400).json({ error: 'All fields required' });
+  if (score < 0 || score > 100) return res.status(400).json({ error: 'Score must be 0-100' });
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await supabase.from('exam_grades').insert({
+      user_id: req.user.id, subject, label, score: Number(score), date
+    }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/grades/:id', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { error } = await supabase.from('exam_grades').delete()
+      .eq('id', req.params.id).eq('user_id', req.user.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ==================== NOTES ====================
 
 app.get('/api/notes', authMiddleware, async (req, res) => {

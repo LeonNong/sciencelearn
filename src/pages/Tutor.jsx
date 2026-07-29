@@ -19,13 +19,50 @@ function AIMessage({ text }) {
   )
 }
 
+// Sleeping frog avatar — shows when idle, sends zzz periodically
+function SleepingFrog({ onWake }) {
+  const [tick, setTick] = useState(0)
+  const [showZzz, setShowZzz] = useState(false)
+
+  useEffect(() => {
+    // Send a zzz message every 8 seconds
+    const interval = setInterval(() => {
+      setTick(t => t + 1)
+      setShowZzz(true)
+      setTimeout(() => setShowZzz(false), 2000)
+    }, 8000)
+    // First zzz after 2s
+    const init = setTimeout(() => { setShowZzz(true); setTimeout(() => setShowZzz(false), 2000) }, 2000)
+    return () => { clearInterval(interval); clearTimeout(init) }
+  }, [])
+
+  return (
+    <div className="relative w-8 h-8 flex-shrink-0 mt-1 cursor-pointer" onClick={onWake} title="Click to wake Frogy!">
+      <img src="/frogy_sleep.png" alt="Frogy sleeping" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
+      {showZzz && (
+        <span key={tick} className="absolute -top-6 left-0 text-xs font-bold text-blue-400 pointer-events-none select-none"
+          style={{ animation: 'floatZzz 2s ease-out forwards' }}>
+          z z z
+        </span>
+      )}
+      <style>{`
+        @keyframes floatZzz {
+          0%   { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-20px) scale(1.3); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
 const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced']
 
 export default function Tutor() {
   const [messages, setMessages] = useState([
-    { role: 'ai', text: "Hi! I'm your AI Science Tutor 🤖\nAsk me anything about Biology, Chemistry, or Physics and I'll explain it clearly with examples!" }
+    { role: 'ai', text: "z z z z z z\n\n*(Ask something to wake Frogy up! 🐸)*", sleeping: true }
   ])
+  const [idle, setIdle] = useState(true)
   const [input, setInput] = useState('')
   const [subject, setSubject] = useState('Biology')
   const [difficulty, setDifficulty] = useState('intermediate')
@@ -40,7 +77,12 @@ export default function Tutor() {
 
   async function ask(question) {
     if (!question.trim()) return
-    setMessages(m => [...m, { role: 'user', text: question }])
+    setIdle(false)
+    setMessages(m => {
+      // Remove the sleeping message if it's the first one
+      const filtered = m.filter(msg => !msg.sleeping)
+      return [...filtered, { role: 'user', text: question }]
+    })
     setInput('')
     setLoading(true)
     try {
@@ -90,7 +132,12 @@ export default function Tutor() {
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : ''}`}>
             {m.role === 'ai' && (
-              <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">🤖</div>
+              m.sleeping
+                ? <SleepingFrog onWake={() => { setInput('Hello Frogy!') }} />
+                : <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">
+                    <img src="/logo.png" alt="Frogy" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                  </div>
+            )}
             )}
             <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed
               ${m.role === 'user'
@@ -104,7 +151,9 @@ export default function Tutor() {
         ))}
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white">🤖</div>
+            <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
+              <img src="/logo.png" alt="Frogy" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+            </div>
             <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex gap-1 items-center h-5">
                 {[0,1,2].map(i => <div key={i} className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />)}

@@ -76,6 +76,10 @@ export const api = {
   createNote: (d) => post('/notes', d),
   updateNote: (id, d) => patch(`/notes/${id}`, d),
   deleteNote: (id) => del(`/notes/${id}`),
+  // Grades
+  getGrades: () => req('/grades'),
+  addGrade: (d) => post('/grades', d),
+  deleteGrade: (id) => del(`/grades/${id}`),
   // Rooms
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),
