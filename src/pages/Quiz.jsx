@@ -109,7 +109,7 @@ export default function Quiz() {
       <div className="space-y-5">
         {questions.map((q, i) => (
           <div key={q.id} className="card">
-            <p className="font-semibold text-gray-900 dark:text-white mb-3">
+            <p className="font-semibold text-white mb-3">
               <span className="text-primary-500 mr-2">Q{i + 1}.</span>{q.question}
             </p>
             {q.type === 'mcq' ? (
@@ -121,8 +121,8 @@ export default function Quiz() {
                     <button key={opt} onClick={() => setAnswers(a => ({ ...a, [q.id]: letter }))}
                       className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition
                         ${selected
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                          : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+                          ? 'border-primary-500 bg-primary-900/30 text-primary-300'
+                          : 'border-gray-600 hover:border-primary-300 hover:bg-gray-700 text-gray-200'}`}>
                       {opt}
                     </button>
                   )
@@ -158,9 +158,9 @@ export default function Quiz() {
           const q = questions.find(q => q.id === r.id)
           return (
             <div key={r.id} className={`card border-l-4 ${r.correct ? 'border-green-500' : 'border-red-500'}`}>
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Q{i+1}. {q?.question}</p>
-              <p className="text-sm mt-1"><span className="text-gray-500">Your answer:</span> <span className={r.correct ? 'text-green-600' : 'text-red-500'}>{r.userAnswer || '(no answer)'}</span></p>
-              {!r.correct && <p className="text-sm"><span className="text-gray-500">Correct:</span> <span className="text-green-600">{r.correctAnswer}</span></p>}
+              <p className="font-semibold text-white text-sm">Q{i+1}. {q?.question}</p>
+              <p className="text-sm mt-1"><span className="text-gray-400">Your answer:</span> <span className={r.correct ? 'text-green-400' : 'text-red-400'}>{r.userAnswer || '(no answer)'}</span></p>
+              {!r.correct && <p className="text-sm"><span className="text-gray-400">Correct:</span> <span className="text-green-400">{r.correctAnswer}</span></p>}
               <p className="text-xs text-gray-500 mt-2 bg-gray-50 dark:bg-gray-700 rounded p-2">{r.feedback}</p>
             </div>
           )
