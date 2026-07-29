@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
-const SUBJECTS = ['Biology', 'Chemistry', 'Physics']
+const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 const TYPES = ['mixed', 'mcq', 'short']
 

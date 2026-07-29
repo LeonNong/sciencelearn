@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
-const SUBJECTS = ['Biology', 'Chemistry', 'Physics']
+const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
 
 export default function Flashcards() {
   const [cards, setCards] = useState([])

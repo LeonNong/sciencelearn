@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import Loader from '../components/Loader'
 
-const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Chemistry', 'Other']
+const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
 const DIFF_LABELS = ['', 'Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard']
 const DIFF_COLORS = ['', 'text-green-500', 'text-green-400', 'text-yellow-500', 'text-orange-500', 'text-red-500']
 
@@ -45,7 +45,7 @@ function AddTopicModal({ onAdd, onClose }) {
             <div>
               <label className="label">Subject</label>
               <select className="input" value={form.subject} onChange={e => set('subject', e.target.value)}>
-                {['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Other'].map(s => <option key={s}>{s}</option>)}
+                {['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation'].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
