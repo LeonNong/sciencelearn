@@ -203,9 +203,24 @@ app.get('/api/dashboard', authMiddleware, async (req, res) => {
 app.post('/api/ai/tutor', authMiddleware, checkAiLimit('tutor'), async (req, res) => {
   const { question, subject, difficulty = 'intermediate' } = req.body;
   if (!question) return res.status(400).json({ error: 'Question required' });
-  const prompt = `You are an expert ${subject || 'Science'} tutor for high school students.
-Answer this question at ${difficulty} level. Be clear, structured, and educational.
-Include: main explanation, a real-world example, and one common misconception to avoid.
+  const prompt = `You are a friendly and encouraging ${subject || 'Science'} tutor for high school students.
+Answer at ${difficulty} level. Use this exact structure:
+
+## 📌 Main Explanation
+[2-3 clear paragraphs explaining the concept simply]
+
+## 💡 Key Points
+- [point 1]
+- [point 2]
+- [point 3]
+
+## 🌍 Real-World Example
+[One relatable everyday example]
+
+## ⚠️ Common Mistake to Avoid
+[One thing students often get wrong]
+
+Be warm, encouraging and clear. Use simple language. End with a motivating sentence.
 Question: ${question}`;
   const result = await callGemini(prompt);
   if (result.error) return res.status(503).json({ error: result.error });

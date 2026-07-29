@@ -32,6 +32,7 @@ export default function Chat() {
   const [error, setError] = useState('')
   const socketRef = useRef(null)
   const bottomRef = useRef(null)
+  const [showReactionPicker, setShowReactionPicker] = useState(null)
 
   useEffect(() => {
     const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002'
@@ -86,6 +87,17 @@ export default function Chat() {
       setRooms(r => [room, ...r]); selectRoom(room)
       setShowJoin(false); setInviteCode('')
     } catch (err) { setError(err.message) }
+  }
+
+  function addReaction(msgId, emoji) {
+    setMessages(prev => prev.map(m => {
+      if (m.id !== msgId) return m
+      const reactions = [...(m.reactions || [])]
+      const existing = reactions.find(r => r.emoji === emoji)
+      if (existing) existing.count += 1
+      else reactions.push({ emoji, count: 1 })
+      return { ...m, reactions }
+    }))
   }
 
   return (
@@ -170,6 +182,29 @@ export default function Chat() {
                     </div>
                   )}
                   <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed break-words">{m.content}</p>
+                  {/* Quick reactions */}
+                  <div className="flex items-center gap-1 mt-1 flex-wrap">
+                    {(m.reactions || []).map((r, ri) => (
+                      <button key={ri} onClick={() => addReaction(m.id, r.emoji)}
+                        className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-0.5 rounded-full transition">
+                        {r.emoji} {r.count}
+                      </button>
+                    ))}
+                    <div className="relative opacity-0 group-hover:opacity-100 transition">
+                      <button onClick={() => setShowReactionPicker(showReactionPicker === m.id ? null : m.id)}
+                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        😊+
+                      </button>
+                      {showReactionPicker === m.id && (
+                        <div className="absolute bottom-7 left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-2 shadow-lg z-10 flex gap-1">
+                          {['👍','❤️','😂','😮','🔥','✅'].map(e => (
+                            <button key={e} onClick={() => { addReaction(m.id, e); setShowReactionPicker(null) }}
+                              className="text-lg hover:scale-125 transition-transform p-1">{e}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )
