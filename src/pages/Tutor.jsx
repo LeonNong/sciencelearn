@@ -63,21 +63,39 @@ export default function Tutor() {
     { role: 'ai', text: "z z z z z z\n\n*(Ask something to wake Frogy up! 🐸)*", sleeping: true }
   ])
   const [idle, setIdle] = useState(true)
+  const [awake, setAwake] = useState(false) // 新增：追踪青蛙是否醒着
   const [input, setInput] = useState('')
   const [subject, setSubject] = useState('Biology')
   const [difficulty, setDifficulty] = useState('intermediate')
   const [loading, setLoading] = useState(false)
   const [remaining, setRemaining] = useState(null)
   const bottomRef = useRef(null)
+  const wakeTimeoutRef = useRef(null) // 新增：用于清除定时器
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
   useEffect(() => {
     api.aiUsage().then(u => setRemaining(u.tutor?.remaining ?? null)).catch(() => {})
   }, [])
 
+  // 新增：清理定时器
+  useEffect(() => {
+    return () => {
+      if (wakeTimeoutRef.current) {
+        clearTimeout(wakeTimeoutRef.current)
+      }
+    }
+  }, [])
+
   async function ask(question) {
     if (!question.trim()) return
     setIdle(false)
+    setAwake(true) // 设置为醒着状态
+    
+    // 清除之前的定时器
+    if (wakeTimeoutRef.current) {
+      clearTimeout(wakeTimeoutRef.current)
+    }
+    
     setMessages(m => {
       // Remove the sleeping message if it's the first one
       const filtered = m.filter(msg => !msg.sleeping)
@@ -89,8 +107,23 @@ export default function Tutor() {
       const res = await api.tutor({ question, subject, difficulty })
       setMessages(m => [...m, { role: 'ai', text: res.answer }])
       setRemaining(r => r !== null ? r - 1 : null)
+      
+      // AI回应后，保持醒着状态10秒，然后回到睡觉状态
+      wakeTimeoutRef.current = setTimeout(() => {
+        setAwake(false)
+        setIdle(true)
+        setMessages(m => [...m, { role: 'ai', text: "z z z z z z\n\n*(Ask something to wake Frogy up! 🐸)*", sleeping: true }])
+      }, 10000) // 10秒后回到睡觉状态
+      
     } catch (err) {
       setMessages(m => [...m, { role: 'ai', text: `❌ ${err.message}`, error: true }])
+      
+      // 即使出错也要设置回到睡觉状态的定时器
+      wakeTimeoutRef.current = setTimeout(() => {
+        setAwake(false)
+        setIdle(true)
+        setMessages(m => [...m, { role: 'ai', text: "z z z z z z\n\n*(Ask something to wake Frogy up! 🐸)*", sleeping: true }])
+      }, 5000) // 出错时5秒后回到睡觉状态
     } finally { setLoading(false) }
   }
 
@@ -135,9 +168,13 @@ export default function Tutor() {
               m.sleeping
                 ? <SleepingFrog onWake={() => { setInput('Hello Frogy!') }} />
                 : <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">
-                    <img src="/logo.png" alt="Frogy" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                    <img 
+                      src={awake ? "/frogy_wake.png" : "/logo.png"} 
+                      alt="Frogy" 
+                      className="w-6 h-6" 
+                      style={{ imageRendering: 'pixelated' }} 
+                    />
                   </div>
-            )}
             )}
             <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed
               ${m.role === 'user'
@@ -152,7 +189,12 @@ export default function Tutor() {
         {loading && (
           <div className="flex gap-3">
             <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
-              <img src="/logo.png" alt="Frogy" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+              <img 
+                src={awake ? "/frogy_wake.png" : "/logo.png"} 
+                alt="Frogy" 
+                className="w-6 h-6" 
+                style={{ imageRendering: 'pixelated' }} 
+              />
             </div>
             <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex gap-1 items-center h-5">
