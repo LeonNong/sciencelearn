@@ -7,3 +7,4 @@ alter table quiz_attempts disable row level security;
 alter table study_sessions disable row level security;
 alter table badges disable row level security;
 alter table study_plans disable row level security;
+alter table exam_grades disable row level security;

@@ -67,6 +67,14 @@ function getToday() { return new Date().toISOString().slice(0, 10); }
 
 function checkAiLimit(action) {
   return (req, res, next) => {
+    // Admin users have no limits
+    if (req.user.isAdmin) {
+      res.setHeader('X-AI-Used', 0);
+      res.setHeader('X-AI-Limit', 'unlimited');
+      res.setHeader('X-AI-Remaining', 'unlimited');
+      return next();
+    }
+
     const key = `${req.user.id}_${action}_${getToday()}`;
     const used = aiUsage[key] || 0;
     const limit = AI_LIMITS[action];
@@ -85,6 +93,15 @@ function checkAiLimit(action) {
 }
 
 app.get('/api/ai/usage', authMiddleware, (req, res) => {
+  // Admin users have unlimited usage
+  if (req.user.isAdmin) {
+    const usage = {};
+    for (const action of Object.keys(AI_LIMITS)) {
+      usage[action] = { used: 0, limit: 'unlimited', remaining: 'unlimited' };
+    }
+    return res.json(usage);
+  }
+
   const today = getToday();
   const usage = {};
   for (const [action, limit] of Object.entries(AI_LIMITS)) {

@@ -37,8 +37,8 @@ function SleepingFrog({ onWake }) {
   }, [])
 
   return (
-    <div className="relative w-8 h-8 flex-shrink-0 mt-1 cursor-pointer" onClick={onWake} title="Click to wake Frogy!">
-      <img src="/frogy_sleep.png" alt="Frogy sleeping" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
+    <div className="relative w-12 h-12 flex-shrink-0 mt-1 cursor-pointer" onClick={onWake} title="Click to wake Frogy!">
+      <img src="/frogy_sleep.png" alt="Frogy sleeping" className="w-12 h-12" style={{ imageRendering: 'pixelated' }} />
       {showZzz && (
         <span key={tick} className="absolute -top-6 left-0 text-xs font-bold text-blue-400 pointer-events-none select-none"
           style={{ animation: 'floatZzz 2s ease-out forwards' }}>
@@ -167,11 +167,11 @@ export default function Tutor() {
             {m.role === 'ai' && (
               m.sleeping
                 ? <SleepingFrog onWake={() => { setInput('Hello Frogy!') }} />
-                : <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">
+                : <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">
                     <img 
                       src={awake ? "/frogy_wake.png" : "/logo.png"} 
                       alt="Frogy" 
-                      className="w-6 h-6" 
+                      className="w-10 h-10" 
                       style={{ imageRendering: 'pixelated' }} 
                     />
                   </div>
@@ -188,11 +188,11 @@ export default function Tutor() {
         ))}
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
+            <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
               <img 
                 src={awake ? "/frogy_wake.png" : "/logo.png"} 
                 alt="Frogy" 
-                className="w-6 h-6" 
+                className="w-10 h-10" 
                 style={{ imageRendering: 'pixelated' }} 
               />
             </div>
