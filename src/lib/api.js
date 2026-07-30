@@ -78,6 +78,7 @@ export const api = {
   deleteNote: (id) => del(`/notes/${id}`),
   // Grades
   getGrades: () => req('/grades'),
+  scanGrades: (image, mimeType) => post('/grades/scan', { image, mimeType }),
   addGrade: (d) => post('/grades', d),
   deleteGrade: (id) => del(`/grades/${id}`),
   // Rooms

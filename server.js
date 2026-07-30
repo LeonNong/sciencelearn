@@ -15,7 +15,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('./db');
-const { callGemini } = require('./ai');
+const { callGemini, callGeminiVision } = require('./ai');
 
 const app = express();
 const server = http.createServer(app);
@@ -542,6 +542,41 @@ app.post('/api/lare/:id/quiz-result', authMiddleware, async (req, res) => {
 });
 
 // ==================== EXAM GRADES ====================
+
+// Scan a grade report image and extract grades with AI
+app.post('/api/grades/scan', authMiddleware, async (req, res) => {
+  const { image, mimeType } = req.body;
+  if (!image) return res.status(400).json({ error: 'Image required' });
+
+  const prompt = `You are analysing a student's grade/mark report image.
+Extract ALL assessments you can see (classwork, tests, exams, projects, etc.).
+For each one return a JSON array. Use today's date if no date is visible.
+Subject names should match one of: Biology, Chemistry, Physics, Mathematics, Mathematical Literacy, English, English HL, Afrikaans, Afrikaans FAL, isiZulu, Life Orientation — or use the exact name shown if it doesn't match.
+
+Return ONLY valid JSON — no markdown, no explanation:
+[
+  { "subject": "Mathematics", "label": "Term 1 Test", "score": 72, "date": "2025-03-15" },
+  ...
+]
+
+Rules:
+- score must be a number 0-100 (convert fractions like 13/20 to percentage: 65)
+- date must be YYYY-MM-DD format
+- label should be the assessment name as shown
+- If you cannot read the score clearly, skip that item`;
+
+  const result = await callGeminiVision(prompt, image, mimeType || 'image/jpeg');
+  if (result.error) return res.status(503).json({ error: result.error });
+
+  try {
+    const match = result.text.match(/\[[\s\S]*\]/);
+    if (!match) return res.status(422).json({ error: 'Could not extract grades from image. Try a clearer photo.' });
+    const grades = JSON.parse(match[0]);
+    res.json({ grades });
+  } catch {
+    res.status(422).json({ error: 'Could not parse grades from image. Try a clearer photo.' });
+  }
+});
 
 app.get('/api/grades', authMiddleware, async (req, res) => {
   try {
