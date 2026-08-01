@@ -6,6 +6,7 @@ const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematica
 const DIFF_LABELS = ['', 'Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard']
 const DIFF_COLORS = ['', 'text-green-500', 'text-green-400', 'text-yellow-500', 'text-orange-500', 'text-red-500']
 
+// 进度条组件：用于展示当前 Topic 的优先级分数，分数越高说明越需要优先复习。
 function ScoreBar({ score }) {
   const color = score >= 75 ? 'bg-red-500' : score >= 50 ? 'bg-orange-400' : score >= 30 ? 'bg-yellow-400' : 'bg-green-500'
   return (
@@ -18,6 +19,7 @@ function ScoreBar({ score }) {
   )
 }
 
+// 新增 Topic 的弹窗：收集科目、考点、考试日期和难度信息，并提交到后端保存。
 function AddTopicModal({ onAdd, onClose }) {
   const [form, setForm] = useState({ subject: 'Biology', topic: '', examDate: '', difficulty: 3 })
   const [loading, setLoading] = useState(false)
@@ -83,6 +85,7 @@ function AddTopicModal({ onAdd, onClose }) {
   )
 }
 
+// 学习面板：为单个 Topic 生成 AI 讲解、复习要点、易错点、测验和闪卡。
 function StudyModal({ topic, onClose, onQuizDone }) {
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -92,6 +95,7 @@ function StudyModal({ topic, onClose, onQuizDone }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    // 打开学习面板时立即调用后端生成该 Topic 的个性化学习内容。
     api.generateLareContent(topic.id)
       .then(setContent)
       .catch(err => setError(err.message))
@@ -99,6 +103,7 @@ function StudyModal({ topic, onClose, onQuizDone }) {
   }, [topic.id])
 
   async function submitQuiz() {
+    // 用户提交测验后，统计答对数量，并把结果写回后端，用于更新后续优先级。
     if (!content) return
     let correct = 0
     content.quiz.forEach((q, i) => { if (quizAnswers[i] === q.answer) correct++ })
@@ -232,6 +237,7 @@ function StudyModal({ topic, onClose, onQuizDone }) {
   )
 }
 
+// 单个闪卡组件：点击后可切换“正面/背面”，帮助用户快速复习概念。
 function FlashCard({ front, back, index }) {
   const [flipped, setFlipped] = useState(false)
   return (
@@ -244,6 +250,7 @@ function FlashCard({ front, back, index }) {
   )
 }
 
+// LARE 主页面：管理所有 Topic，并根据后端返回的优先级排序，展示最高优先级内容。
 export default function LARE() {
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
@@ -251,6 +258,7 @@ export default function LARE() {
   const [studyTopic, setStudyTopic] = useState(null)
 
   useEffect(() => {
+    // 页面首次加载时，读取该用户的所有 LARE Topic 并展示优先级排名。
     api.getLareTopics()
       .then(data => setTopics(data))
       .catch(() => {})
@@ -262,18 +270,20 @@ export default function LARE() {
   }
 
   async function handleDelete(id) {
+    // 删除 Topic：从列表中移除对应考点，并同步调用后端删除接口。
     if (!confirm('Remove this topic?')) return
     await api.deleteLareTopic(id)
     setTopics(prev => prev.filter(t => t.id !== id))
   }
 
   async function handleDifficultyUpdate(topic, newDiff) {
+    // 更新难度后会重新计算该 Topic 的优先级，并重新排序显示。
     const updated = await api.updateLareTopic(topic.id, { difficulty: newDiff })
     setTopics(prev => prev.map(t => t.id === updated.id ? updated : t).sort((a, b) => (b.score || 0) - (a.score || 0)))
   }
 
   function handleQuizDone() {
-    // Refresh topics to get updated priority
+    // 测验提交后刷新 Topic 列表，读取后端更新后的优先级分数。
     api.getLareTopics().then(data => setTopics(data)).catch(() => {})
   }
 
@@ -381,5 +391,5 @@ export default function LARE() {
   )
 }
 
-// Fallback display if score not computed client-side
+// 如果前端没有拿到 score，则用占位符展示，避免页面出现空白。
 function calcDisplay(t) { return '—' }

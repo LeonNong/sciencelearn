@@ -8,9 +8,11 @@ import {
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
+// 可选科目列表，保证 AI 识别后的科目名能够对应到前端展示的选择项。
 const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy',
   'English', 'English HL', 'Afrikaans', 'Afrikaans FAL', 'isiZulu', 'Life Orientation']
 
+// 每个科目的折线图颜色，便于前端在图表中区分不同学科。
 const SUBJECT_COLORS = {
   Biology: '#10b981', Chemistry: '#8b5cf6', Physics: '#f59e0b',
   Mathematics: '#3b82f6', 'Mathematical Literacy': '#06b6d4',
@@ -18,6 +20,7 @@ const SUBJECT_COLORS = {
   'Afrikaans FAL': '#f97316', isiZulu: '#84cc16', 'Life Orientation': '#a78bfa'
 }
 
+// 根据分数返回对应的等级标签、颜色和 emoji，用于统计卡片和 tooltip 中展示。
 function gradeSymbol(score) {
   if (score >= 80) return { label: 'Distinction', color: '#10b981', emoji: '🏆' }
   if (score >= 70) return { label: 'Merit', color: '#3b82f6', emoji: '🎉' }
@@ -26,7 +29,7 @@ function gradeSymbol(score) {
   return { label: 'Below Pass', color: '#ef4444', emoji: '💪' }
 }
 
-// Scan modal — shows extracted grades for confirmation before saving
+// AI 扫描结果确认弹窗：展示模型识别出的成绩列表，允许用户在保存前修改或删除。
 function ScanModal({ extracted, onConfirm, onClose }) {
   const [items, setItems] = useState(extracted)
 
@@ -72,6 +75,7 @@ function ScanModal({ extracted, onConfirm, onClose }) {
   )
 }
 
+// Grade Tracker 主页面：负责保存、读取、扫描、统计和展示成绩数据。
 export default function Grades() {
   const [grades, setGrades] = useState([])
   const [form, setForm] = useState({ subject: 'Biology', label: '', score: '', date: new Date().toISOString().split('T')[0] })
@@ -82,12 +86,16 @@ export default function Grades() {
   const [scanning, setScanning] = useState(false)
   const [scanPreview, setScanPreview] = useState(null)
   const [scanModal, setScanModal] = useState(null) // extracted grades
+  const [showUploadOptions, setShowUploadOptions] = useState(false)
   const fileRef = useRef()
+  const cameraRef = useRef()
 
+  // 页面首次加载时，从后端拉取该用户已经保存的所有成绩记录。
   useEffect(() => { api.getGrades().then(setGrades).catch(() => {}) }, [])
 
   const subjects = [...new Set(grades.map(g => g.subject))]
 
+  // 手动新增一条成绩记录，表单提交后会直接保存到后端数据库。
   async function addGrade(e) {
     e.preventDefault()
     if (!form.label.trim() || !form.score) return setError('All fields required')
@@ -100,12 +108,13 @@ export default function Grades() {
     finally { setLoading(false) }
   }
 
+  // 删除某一条成绩记录，删除后同步更新前端状态。
   async function deleteGrade(id) {
     await api.deleteGrade(id)
     setGrades(prev => prev.filter(g => g.id !== id))
   }
 
-  // Handle image file picked or captured
+  // 处理用户上传或拍摄的成绩单图片，转成 base64 后发给 AI 扫描接口。
   async function handleImageFile(file) {
     if (!file) return
     const reader = new FileReader()
@@ -130,7 +139,7 @@ export default function Grades() {
     reader.readAsDataURL(file)
   }
 
-  // Save confirmed grades from scan modal
+  // 用户确认扫描结果后，将每一条提取出来的成绩批量保存到数据库。
   async function handleScanConfirm(items) {
     setScanModal(null)
     setScanPreview(null)
@@ -142,7 +151,7 @@ export default function Grades() {
     finally { setLoading(false) }
   }
 
-  // Build chart data
+  // 使用日期与科目构建图表数据，按日期横轴、分数纵轴展示趋势。
   const filteredSubjects = activeSubject === 'All' ? subjects : [activeSubject]
   const allDates = [...new Set(grades.map(g => g.date))].sort()
 
@@ -187,6 +196,7 @@ export default function Grades() {
     }
   }
 
+  // 统计每个科目的平均分、最新成绩和趋势，用于主页卡片展示。
   const stats = subjects.map(subj => {
     const sg = grades.filter(g => g.subject === subj)
     const avg = sg.length ? Math.round(sg.reduce((a, b) => a + b.score, 0) / sg.length) : 0
@@ -214,23 +224,54 @@ export default function Grades() {
           <h2 className="font-bold text-gray-900 dark:text-white">Add Exam Result</h2>
 
           {/* AI Scan button */}
-          <div>
-            <input ref={fileRef} type="file" accept="image/*" capture="environment"
-              className="hidden" onChange={e => handleImageFile(e.target.files[0])} />
-            <button
-              onClick={() => fileRef.current.click()}
-              disabled={scanning}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed border-primary-400 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition text-sm font-medium"
-            >
-              {scanning ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
-                  Scanning...
-                </>
-              ) : (
-                <>📷 Scan Report Card with AI</>
-              )}
-            </button>
+          <div data-upload-panel>
+            {/* hidden: gallery / any file */}
+            <input ref={fileRef} type="file" accept="image/*"
+              className="hidden" onChange={e => { setShowUploadOptions(false); handleImageFile(e.target.files[0]) }} />
+            {/* hidden: direct camera capture */}
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment"
+              className="hidden" onChange={e => { setShowUploadOptions(false); handleImageFile(e.target.files[0]) }} />
+
+            {scanning ? (
+              <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed border-primary-400 text-primary-600 dark:text-primary-400 text-sm font-medium">
+                <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+                Scanning...
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowUploadOptions(v => !v)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed border-primary-400 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition text-sm font-medium"
+              >
+                📷 Scan Report Card with AI
+              </button>
+            )}
+
+            {/* Upload options panel */}
+            {showUploadOptions && !scanning && (
+              <div data-upload-panel className="mt-2 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden shadow-sm">
+                <button
+                  onClick={() => cameraRef.current.click()}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition border-b border-gray-200 dark:border-gray-600"
+                >
+                  <span className="text-xl">📸</span>
+                  <div className="text-left">
+                    <div className="font-medium">Take Photo</div>
+                    <div className="text-xs text-gray-400">Open camera to photograph your report card</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => fileRef.current.click()}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  <span className="text-xl">🖼️</span>
+                  <div className="text-left">
+                    <div className="font-medium">Choose from Gallery</div>
+                    <div className="text-xs text-gray-400">Select an existing photo from your device</div>
+                  </div>
+                </button>
+              </div>
+            )}
+
             {scanPreview && !scanning && !scanModal && (
               <img src={scanPreview} alt="preview" className="mt-2 w-full rounded-lg object-cover max-h-32" />
             )}
