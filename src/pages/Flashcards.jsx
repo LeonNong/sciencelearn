@@ -90,7 +90,11 @@ export default function Flashcards() {
                   <div key={c.id} className="card cursor-pointer hover:shadow-md transition" onClick={() => setFlipped(f => ({ ...f, [c.id]: !f[c.id] }))}>
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full
-                        ${c.subject === 'Biology' ? 'bg-green-100 text-green-700' : c.subject === 'Chemistry' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        ${c.subject === 'Biology' ? 'bg-green-900/50 text-green-400' 
+                        : c.subject === 'Chemistry' ? 'bg-purple-900/50 text-purple-400' 
+                        : c.subject === 'Physics' ? 'bg-yellow-900/50 text-yellow-400'
+                        : c.subject === 'Mathematics' || c.subject === 'Mathematical Literacy' ? 'bg-blue-900/50 text-blue-400'
+                        : 'bg-gray-700 text-gray-300'}`}>
                         {c.subject}
                       </span>
                       <div className="flex gap-2">
