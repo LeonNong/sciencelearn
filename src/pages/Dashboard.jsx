@@ -52,15 +52,19 @@ export default function Dashboard() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          { to: '/lare',       icon: '⚡', label: 'LARE', color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
-          { to: '/tutor',      icon: '🤖', label: 'Ask AI', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
-          { to: '/quiz',       icon: '🧪', label: 'Take Quiz', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
-          { to: '/flashcards', icon: '🃏', label: 'Flashcards', color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
-          { to: '/planner',    icon: '📅', label: 'Planner', color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
-          { to: '/scanner',    icon: '📷', label: 'Scan HW', color: 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300' },
-          { to: '/chat',       icon: '💬', label: 'Chat', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+          { to: '/lare',       icon: '⚡', label: 'LARE',         color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
+          { to: '/tutor',      icon: '🤖', label: 'Ask AI',        color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
+          { to: '/quiz',       icon: '🧪', label: 'Take Quiz',     color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
+          { to: '/flashcards', icon: '🃏', label: 'Flashcards',    color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
+          { to: '/planner',    icon: '📅', label: 'Planner',       color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
+          { to: '/scanner',    icon: '📷', label: 'Scan HW',       color: 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300' },
+          { to: '/notes',      icon: '📓', label: 'Notes',         color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' },
+          { to: '/grades',     icon: '📈', label: 'Grade Tracker', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
+          { to: '/comments',   icon: '💬', label: 'Comments',      color: 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300' },
+          { to: '/memory',     icon: '⌨️', label: 'Memory Typing', color: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300' },
+          { to: '/chat',       icon: '🗨️', label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
         ].map(({ to, icon, label, color }) => (
           <Link key={to} to={to} className={`card flex flex-col items-center gap-2 py-4 hover:shadow-md transition cursor-pointer ${color}`}>
             <span className="text-2xl">{icon}</span>
