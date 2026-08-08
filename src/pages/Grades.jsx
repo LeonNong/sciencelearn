@@ -5,6 +5,10 @@ import {
   Chart, CategoryScale, LinearScale, PointElement,
   LineElement, Title, Tooltip, Legend, Filler
 } from 'chart.js'
+import * as pdfjsLib from 'pdfjs-dist'
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
@@ -89,6 +93,43 @@ export default function Grades() {
   const [showUploadOptions, setShowUploadOptions] = useState(false)
   const fileRef = useRef()
   const cameraRef = useRef()
+  const pdfRef = useRef()
+
+  // 将 PDF 的所有页面渲染成一张长图的 base64，用于发给 AI 扫描。
+  async function pdfToBase64(file) {
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    const scale = 2
+    const canvases = []
+    let totalHeight = 0
+    let maxWidth = 0
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const viewport = page.getViewport({ scale })
+      const canvas = document.createElement('canvas')
+      canvas.width = viewport.width
+      canvas.height = viewport.height
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise
+      canvases.push(canvas)
+      totalHeight += viewport.height
+      maxWidth = Math.max(maxWidth, viewport.width)
+    }
+
+    // Merge all pages into one tall canvas
+    const merged = document.createElement('canvas')
+    merged.width = maxWidth
+    merged.height = totalHeight
+    const ctx = merged.getContext('2d')
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, maxWidth, totalHeight)
+    let y = 0
+    for (const c of canvases) {
+      ctx.drawImage(c, 0, y)
+      y += c.height
+    }
+    return merged.toDataURL('image/jpeg', 0.9)
+  }
 
   // 页面首次加载时，从后端拉取该用户已经保存的所有成绩记录。
   useEffect(() => { api.getGrades().then(setGrades).catch(() => {}) }, [])
@@ -114,29 +155,33 @@ export default function Grades() {
     setGrades(prev => prev.filter(g => g.id !== id))
   }
 
-  // 处理用户上传或拍摄的成绩单图片，转成 base64 后发给 AI 扫描接口。
+  // 处理用户上传或拍摄的成绩单图片/PDF，转成 base64 后发给 AI 扫描接口。
   async function handleImageFile(file) {
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const dataUrl = e.target.result
-      setScanPreview(dataUrl)
-      setScanning(true)
-      setError('')
-      try {
-        // Strip "data:image/jpeg;base64," prefix
-        const base64 = dataUrl.split(',')[1]
-        const mimeType = file.type || 'image/jpeg'
-        const result = await api.scanGrades(base64, mimeType)
-        setScanModal(result.grades)
-      } catch (err) {
-        setError('AI scan failed: ' + err.message)
+    setScanning(true)
+    setError('')
+    try {
+      let dataUrl
+      if (file.type === 'application/pdf') {
         setScanPreview(null)
-      } finally {
-        setScanning(false)
+        dataUrl = await pdfToBase64(file)
+      } else {
+        dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = e => resolve(e.target.result)
+          reader.readAsDataURL(file)
+        })
+        setScanPreview(dataUrl)
       }
+      const base64 = dataUrl.split(',')[1]
+      const result = await api.scanGrades(base64, 'image/jpeg')
+      setScanModal(result.grades)
+    } catch (err) {
+      setError('AI scan failed: ' + err.message)
+      setScanPreview(null)
+    } finally {
+      setScanning(false)
     }
-    reader.readAsDataURL(file)
   }
 
   // 用户确认扫描结果后，将每一条提取出来的成绩批量保存到数据库。
@@ -231,6 +276,9 @@ export default function Grades() {
             {/* hidden: direct camera capture */}
             <input ref={cameraRef} type="file" accept="image/*" capture="environment"
               className="hidden" onChange={e => { setShowUploadOptions(false); handleImageFile(e.target.files[0]) }} />
+            {/* hidden: PDF upload */}
+            <input ref={pdfRef} type="file" accept="application/pdf"
+              className="hidden" onChange={e => { setShowUploadOptions(false); handleImageFile(e.target.files[0]) }} />
 
             {scanning ? (
               <button disabled className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-dashed border-primary-400 text-primary-600 dark:text-primary-400 text-sm font-medium">
@@ -267,6 +315,16 @@ export default function Grades() {
                   <div className="text-left">
                     <div className="font-medium">Choose from Gallery</div>
                     <div className="text-xs text-gray-400">Select an existing photo from your device</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => pdfRef.current.click()}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition border-t border-gray-200 dark:border-gray-600"
+                >
+                  <span className="text-xl">📄</span>
+                  <div className="text-left">
+                    <div className="font-medium">Upload PDF</div>
+                    <div className="text-xs text-gray-400">Select a PDF report card from your device</div>
                   </div>
                 </button>
               </div>
