@@ -185,28 +185,41 @@ function ReviewTab() {
   const [all, setAll] = useState([])
   const [queue, setQueue] = useState([])
   const [idx, setIdx] = useState(0)
-  const [phase, setPhase] = useState('show') // show | choices | result
+  const [phase, setPhase] = useState('show')
   const [streak, setStreak] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [done, setDone] = useState(false)
   const [choice, setChoice] = useState(null)
+  const [mode, setMode] = useState(null) // null = not started
 
   useEffect(() => {
     api.getLangVocab().then(vocab => {
       setAll(vocab)
-      const due = vocab.filter(v => new Date(v.next_review) <= new Date())
-      // shuffle
-      setQueue([...due].sort(() => Math.random() - 0.5))
     }).catch(() => {})
   }, [])
 
+  function startReview(reviewAll) {
+    const pool = reviewAll
+      ? all
+      : all.filter(v => {
+          if (!v.next_review) return true
+          // Add 5 min buffer to account for clock differences
+          return new Date(v.next_review) <= new Date(Date.now() + 5 * 60 * 1000)
+        })
+    setQueue([...pool].sort(() => Math.random() - 0.5))
+    setIdx(0); setPhase('show'); setChoice(null)
+    setDone(false); setStreak(0); setCorrect(0)
+    setMode(reviewAll ? 'all' : 'due')
+  }
+
   function buildChoices(card) {
     const cardDef = parseMeanings(card.definition)[0]?.definition || card.definition
-    const wrong = all.filter(v => v.id !== card.id && v.definition)
-      .sort(() => Math.random() - 0.5).slice(0, 3)
+    const pool = all.filter(v => v.id !== card.id && v.definition)
+    const wrong = pool.sort(() => Math.random() - 0.5).slice(0, 3)
       .map(v => parseMeanings(v.definition)[0]?.definition || v.definition)
-    const opts = [...wrong, cardDef].sort(() => Math.random() - 0.5)
-    return opts
+    // If not enough wrong choices, pad with generic distractors
+    while (wrong.length < 3) wrong.push(`Meaning ${wrong.length + 1}`)
+    return [...wrong, cardDef].sort(() => Math.random() - 0.5)
   }
 
   async function answer(selected) {
@@ -228,11 +241,36 @@ function ReviewTab() {
     setChoice(null)
   }
 
+  // Start screen
+  if (mode === null) {
+    const dueCount = all.filter(v => {
+      if (!v.next_review) return true
+      return new Date(v.next_review) <= new Date(Date.now() + 5 * 60 * 1000)
+    }).length
+    return (
+      <div className="max-w-sm mx-auto card text-center space-y-4 py-8">
+        <p className="text-white font-bold text-sm">Review Mode</p>
+        <p className="text-gray-400 text-xs">{all.length} total words · {dueCount} due</p>
+        <div className="space-y-2">
+          <button onClick={() => startReview(false)} className="btn-primary w-full"
+            disabled={dueCount === 0}>
+            Review Due ({dueCount})
+          </button>
+          <button onClick={() => startReview(true)} className="btn-secondary w-full"
+            disabled={all.length === 0}>
+            Review All ({all.length})
+          </button>
+        </div>
+        {all.length === 0 && <p className="text-gray-500 text-xs">Add words in Vocabulary tab first.</p>}
+      </div>
+    )
+  }
+
   if (queue.length === 0) return (
-    <div className="card text-center py-12">
-      <p className="text-4xl mb-3">🎉</p>
-      <p className="text-white text-sm">No words due for review!</p>
-      <p className="text-gray-500 text-xs mt-2">Add words in Vocabulary tab first.</p>
+    <div className="card text-center py-12 space-y-3">
+      <p className="text-4xl">🎉</p>
+      <p className="text-white text-sm">No words to review!</p>
+      <button onClick={() => setMode(null)} className="btn-secondary px-6">Back</button>
     </div>
   )
 
@@ -241,8 +279,10 @@ function ReviewTab() {
       <p className="text-4xl">✅</p>
       <p className="text-white font-bold">Session complete!</p>
       <p className="text-green-400 text-sm">{correct} / {queue.length} correct</p>
-      <button onClick={() => { setIdx(0); setPhase('show'); setChoice(null); setDone(false); setStreak(0); setCorrect(0) }}
-        className="btn-primary px-6 mt-2">Review Again</button>
+      <div className="flex gap-2 justify-center">
+        <button onClick={() => startReview(mode === 'all')} className="btn-primary px-6">Again</button>
+        <button onClick={() => setMode(null)} className="btn-secondary px-4">Menu</button>
+      </div>
     </div>
   )
 
