@@ -196,7 +196,22 @@ export default function Grades() {
     finally { setLoading(false) }
   }
 
-  // 使用日期与科目构建图表数据，按日期横轴、分数纵轴展示趋势。
+  const [expandedSubjects, setExpandedSubjects] = useState({})
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  function toggleSubject(subj) {
+    setExpandedSubjects(prev => ({ ...prev, [subj]: !prev[subj] }))
+  }
+
+  async function clearAllGrades() {
+    setLoading(true)
+    try {
+      await Promise.all(grades.map(g => api.deleteGrade(g.id)))
+      setGrades([])
+      setConfirmClear(false)
+    } catch (err) { setError('Failed to clear grades: ' + err.message) }
+    finally { setLoading(false) }
+  }
   const filteredSubjects = activeSubject === 'All' ? subjects : [activeSubject]
   const allDates = [...new Set(grades.map(g => g.date))].sort()
 
@@ -428,32 +443,74 @@ export default function Grades() {
         </div>
       )}
 
-      {/* Grade history table */}
+      {/* Grade history — grouped by subject, collapsible */}
       {grades.length > 0 && (
         <div className="card">
-          <h2 className="font-bold text-gray-900 dark:text-white mb-4">All Results</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-white">All Results</h2>
+            {confirmClear ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">Clear all?</span>
+                <button onClick={clearAllGrades} disabled={loading}
+                  className="text-xs px-3 py-1 bg-red-600 text-white hover:bg-red-700 transition">
+                  Yes, clear
+                </button>
+                <button onClick={() => setConfirmClear(false)}
+                  className="text-xs px-3 py-1 btn-secondary">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmClear(true)}
+                className="text-xs px-3 py-1 text-red-400 border border-red-800 hover:bg-red-900/30 transition">
+                🗑 Clear All
+              </button>
+            )}
+          </div>
           <div className="space-y-2">
-            {[...grades].reverse().map(g => {
-              const sym = gradeSymbol(g.score)
-              const color = SUBJECT_COLORS[g.subject] || '#6b7280'
+            {subjects.map(subj => {
+              const subjGrades = [...grades].filter(g => g.subject === subj).reverse()
+              const color = SUBJECT_COLORS[subj] || '#6b7280'
+              const isOpen = expandedSubjects[subj] ?? false
+              const avg = Math.round(subjGrades.reduce((a, b) => a + b.score, 0) / subjGrades.length)
               return (
-                <div key={g.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition group">
-                  <div className="w-2 h-8 rounded-full flex-shrink-0" style={{ background: color }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 dark:text-white text-sm">{g.label}</span>
-                      <span className="text-xs text-gray-400">{g.subject}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">{g.date}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg" style={{ color }}>{g.score}%</div>
-                    <div className="text-xs" style={{ color }}>{sym.emoji} {sym.label}</div>
-                  </div>
-                  <button onClick={() => deleteGrade(g.id)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition text-sm ml-2">
-                    🗑
+                <div key={subj} className="border border-gray-700">
+                  {/* Subject header row — click to toggle */}
+                  <button
+                    onClick={() => toggleSubject(subj)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-800 transition text-left"
+                  >
+                    <div className="w-2 h-5 flex-shrink-0" style={{ background: color }} />
+                    <span className="font-semibold text-white text-sm flex-1">{subj}</span>
+                    <span className="text-xs text-gray-400">{subjGrades.length} result{subjGrades.length !== 1 ? 's' : ''}</span>
+                    <span className="text-sm font-bold ml-3" style={{ color }}>{avg}%</span>
+                    <span className="text-gray-500 text-xs ml-2">{isOpen ? '▲' : '▼'}</span>
                   </button>
+
+                  {/* Expanded rows */}
+                  {isOpen && (
+                    <div className="border-t border-gray-700 divide-y divide-gray-800">
+                      {subjGrades.map(g => {
+                        const sym = gradeSymbol(g.score)
+                        return (
+                          <div key={g.id} className="flex items-center gap-4 px-4 py-2.5 hover:bg-gray-800 transition group">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-white text-sm">{g.label}</span>
+                              <span className="text-xs text-gray-500 ml-2">{g.date}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold text-sm" style={{ color }}>{g.score}%</span>
+                              <span className="text-xs ml-2" style={{ color }}>{sym.emoji} {sym.label}</span>
+                            </div>
+                            <button onClick={() => deleteGrade(g.id)}
+                              className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 transition text-sm ml-2">
+                              🗑
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )
             })}
