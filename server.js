@@ -827,6 +827,7 @@ app.post('/api/lang/writing', authMiddleware, async (req, res) => {
   if (!text) return res.status(400).json({ error: 'Text required' });
   const aiPrompt = `You are a ${language} language teacher analysing a student's writing.
 The student was asked to write in ${language} but may have mixed in ${nativeLanguage} words for words they don't know.
+${userPrompt ? `Topic: "${userPrompt}"` : 'Free writing (no specific topic given).'}
 
 Student's writing:
 "${text}"

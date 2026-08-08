@@ -453,13 +453,6 @@ function WritingTab({ lang }) {
   const [added, setAdded] = useState({}) // track which words were added to vocab
 
   const NATIVE_LANGS = ['Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
-  const PROMPTS = [
-    'Describe your daily routine.',
-    'Write about your favourite place.',
-    'Describe a memorable experience.',
-    'What are your goals for this year?',
-    'Talk about someone important to you.',
-  ]
 
   async function analyse() {
     if (!text.trim()) return
@@ -515,15 +508,9 @@ function WritingTab({ lang }) {
       </div>
 
       <div>
-        <label className="label">Prompt (optional)</label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {PROMPTS.map(p => (
-            <button key={p} onClick={() => setPrompt(p)}
-              className={`text-xs px-2 py-1 border transition ${prompt === p ? 'border-primary-500 text-primary-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}>
-              {p}
-            </button>
-          ))}
-        </div>
+        <label className="label">Topic (optional — leave blank to free write)</label>
+        <input className="input text-xs" value={prompt} onChange={e => setPrompt(e.target.value)}
+          placeholder={`e.g. My daily routine, A memorable trip, My favourite food...`} />
       </div>
 
       <div>
