@@ -741,14 +741,14 @@ app.post('/api/lang/vocab/generate', authMiddleware, async (req, res) => {
   "meanings": [
     {
       "part_of_speech": "noun/verb/adjective/adverb/etc${isAfrikaans ? ' (for Afrikaans verbs use: verb (v1) for infinitive form, verb (v2) for conjugated form)' : ''}",
-      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc",
+      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc${isAfrikaans ? ' — for Afrikaans verbs also add tense: Past/Future/Present after the abbr e.g. v2. Past' : ''}",
       "definition": "clear concise definition for this meaning",
       "example": "natural example sentence using the word in this meaning"
     }
   ],
   "translation": "translation to English (if not already English, else leave blank)"
 }
-Include ALL common meanings. For Afrikaans verbs, always include both v1 (infinitive e.g. loop) and v2 (conjugated e.g. geloop) as separate meanings if applicable.`;
+Include ALL common meanings. For Afrikaans verbs, always include both v1 (infinitive e.g. loop) and v2 (conjugated e.g. geloop) as separate meanings if applicable. For past tense forms (prefix ge-) mark as Past, for future tense (sal + verb) mark as Future.`;
   const result = await callGemini(prompt);
   if (result.error) return res.status(503).json({ error: result.error });
   try {
@@ -786,14 +786,14 @@ app.post('/api/lang/vocab/:id/refresh', authMiddleware, async (req, res) => {
   "meanings": [
     {
       "part_of_speech": "noun/verb/adjective/etc${isAfrikaans ? ' (use verb (v1) for infinitive, verb (v2) for conjugated)' : ''}",
-      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc",
+      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc${isAfrikaans ? ' — add tense after abbr: Past/Future/Present e.g. v2. Past' : ''}",
       "definition": "clear concise definition",
       "example": "natural example sentence"
     }
   ],
   "translation": "English translation or blank"
 }
-Include ALL common meanings. For Afrikaans verbs include both v1 and v2 if applicable.`;
+Include ALL common meanings. For Afrikaans verbs include both v1 and v2 if applicable. For past tense forms (ge- prefix) mark as Past, future (sal +) mark as Future.`;
     const result = await callGemini(prompt);
     if (result.error) return res.status(503).json({ error: result.error });
     let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
