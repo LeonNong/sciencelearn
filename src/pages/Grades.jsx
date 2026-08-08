@@ -142,7 +142,13 @@ export default function Grades() {
   const YEARS = Array.from({ length: 6 }, (_, i) => currentYear - i)
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const [grades, setGrades] = useState([])
-  const [form, setForm] = useState({ subject: 'Biology', label: '', score: '', date: new Date().toISOString().split('T')[0] })
+
+  function defaultDate(year) {
+    const now = new Date()
+    return `${year}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+  }
+
+  const [form, setForm] = useState({ subject: 'Biology', label: '', score: '', date: defaultDate(currentYear) })
   const [activeSubject, setActiveSubject] = useState('All')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -221,7 +227,9 @@ export default function Grades() {
     try {
       const g = await api.addGrade({ ...form, score: Number(form.score) })
       setGrades(prev => [...prev, g].sort((a, b) => a.date.localeCompare(b.date)))
-      setForm(f => ({ ...f, label: '', score: '' }))
+      const today = new Date()
+      const keepDate = `${selectedYear}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+      setForm(f => ({ ...f, label: '', score: '', date: keepDate }))
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -364,7 +372,7 @@ export default function Grades() {
           onChange={e => {
             const y = Number(e.target.value)
             setSelectedYear(y)
-            setForm(f => ({ ...f, date: f.date.replace(/^\d{4}/, String(y)) }))
+            setForm(f => ({ ...f, date: defaultDate(y) }))
           }}>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
