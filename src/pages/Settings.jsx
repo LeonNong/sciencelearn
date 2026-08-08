@@ -9,6 +9,7 @@ const AVATAR_COLORS = [
 ]
 
 const GRADES = ['Year 7','Year 8','Year 9','Year 10','Year 11','Year 12','Year 13','Other']
+const HOME_LANGUAGES = ['English', 'Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
 
 export default function Settings() {
   const { user, updateUser } = useAuth()
@@ -18,6 +19,7 @@ export default function Settings() {
     grade: user?.grade || '',
     avatarColor: user?.avatarColor || '#3B82F6',
   })
+  const [homeLang, setHomeLang] = useState(() => localStorage.getItem('sl_home_lang') || 'English')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -78,6 +80,15 @@ export default function Settings() {
             <option value="">Select year group</option>
             {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
           </select>
+        </div>
+
+        {/* Home language */}
+        <div>
+          <label className="label">Home Language</label>
+          <select className="input" value={homeLang} onChange={e => { setHomeLang(e.target.value); localStorage.setItem('sl_home_lang', e.target.value) }}>
+            {HOME_LANGUAGES.map(l => <option key={l}>{l}</option>)}
+          </select>
+          <p className="text-xs text-gray-400 mt-1">Used in Language Learning writing feedback.</p>
         </div>
 
         {/* Avatar color */}
