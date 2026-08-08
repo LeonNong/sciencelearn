@@ -821,32 +821,39 @@ Return ONLY valid JSON:
   } catch { res.status(500).json({ error: 'Failed to generate grammar exercises.' }); }
 });
 
-// AI writing feedback
+// AI writing analysis — detect AI content, translate native language words
 app.post('/api/lang/writing', authMiddleware, async (req, res) => {
-  const { language, prompt: userPrompt, text } = req.body;
+  const { language, nativeLanguage = 'Chinese', prompt: userPrompt, text } = req.body;
   if (!text) return res.status(400).json({ error: 'Text required' });
-  const aiPrompt = `You are a ${language || 'English'} language teacher. A student wrote the following in response to: "${userPrompt || 'Free writing'}".
+  const aiPrompt = `You are a ${language} language teacher analysing a student's writing.
+The student was asked to write in ${language} but may have mixed in ${nativeLanguage} words for words they don't know.
 
-Student's text:
+Student's writing:
 "${text}"
 
-Give detailed constructive feedback. Return ONLY valid JSON:
+Task:
+1. Detect if this text looks AI-generated (too formal, perfect grammar, no personal voice, overly structured)
+2. Find every word/phrase written in ${nativeLanguage} (or any non-${language} language)
+3. For each native-language word found, provide the ${language} translation
+
+Return ONLY valid JSON:
 {
-  "score": 75,
-  "summary": "Overall assessment in 1-2 sentences",
-  "corrections": [
-    { "original": "incorrect phrase", "corrected": "correct phrase", "explanation": "why" }
+  "ai_score": 0-100,
+  "ai_warning": "brief explanation if score > 60, else null",
+  "native_words": [
+    { "original": "the native word as written", "translation": "${language} equivalent", "definition": "brief meaning", "example": "example sentence in ${language}" }
   ],
-  "strengths": ["strength 1", "strength 2"],
-  "improvements": ["suggestion 1", "suggestion 2"],
-  "corrected_text": "The fully corrected version of their text"
+  "feedback": "2-3 sentences of encouraging feedback on their writing attempt",
+  "strengths": ["what they did well"],
+  "suggestions": ["1-2 specific improvements"]
 }`;
+
   const result = await callGemini(aiPrompt);
   if (result.error) return res.status(503).json({ error: result.error });
   try {
-    let text2 = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    res.json(JSON.parse(text2.match(/\{[\s\S]*\}/)[0]));
-  } catch { res.status(500).json({ error: 'Failed to get feedback.' }); }
+    let t = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    res.json(JSON.parse(t.match(/\{[\s\S]*\}/)[0]));
+  } catch { res.status(500).json({ error: 'Failed to analyse writing.' }); }
 });
 
 // GET language progress stats

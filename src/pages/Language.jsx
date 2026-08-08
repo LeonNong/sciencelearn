@@ -113,65 +113,124 @@ function VocabTab({ lang }) {
   )
 }
 
+// ── 百词斩风格 Review Tab ────────────────────────────────────────
 function ReviewTab() {
-  const [due, setDue] = useState([])
+  const [all, setAll] = useState([])
+  const [queue, setQueue] = useState([])
   const [idx, setIdx] = useState(0)
-  const [flipped, setFlipped] = useState(false)
+  const [phase, setPhase] = useState('show') // show | choices | result
+  const [streak, setStreak] = useState(0)
+  const [correct, setCorrect] = useState(0)
   const [done, setDone] = useState(false)
+  const [choice, setChoice] = useState(null)
 
   useEffect(() => {
     api.getLangVocab().then(vocab => {
-      setDue(vocab.filter(v => new Date(v.next_review) <= new Date()))
+      setAll(vocab)
+      const due = vocab.filter(v => new Date(v.next_review) <= new Date())
+      // shuffle
+      setQueue([...due].sort(() => Math.random() - 0.5))
     }).catch(() => {})
   }, [])
 
-  async function rate(quality) {
-    await api.reviewVocab(due[idx].id, quality)
-    const next = idx + 1
-    if (next >= due.length) setDone(true)
-    else { setIdx(next); setFlipped(false) }
+  function buildChoices(card) {
+    const wrong = all.filter(v => v.id !== card.id && v.definition)
+      .sort(() => Math.random() - 0.5).slice(0, 3).map(v => v.definition)
+    const opts = [...wrong, card.definition].sort(() => Math.random() - 0.5)
+    return opts
   }
 
-  if (due.length === 0) return (
+  async function answer(selected) {
+    const card = queue[idx]
+    const isCorrect = selected === card.definition
+    setChoice({ selected, correct: card.definition, isCorrect })
+    setPhase('result')
+    const quality = isCorrect ? 5 : 0
+    await api.reviewVocab(card.id, quality)
+    if (isCorrect) setStreak(s => s + 1); else setStreak(0)
+    if (isCorrect) setCorrect(c => c + 1)
+  }
+
+  function next() {
+    if (idx + 1 >= queue.length) { setDone(true); return }
+    setIdx(i => i + 1)
+    setPhase('show')
+    setChoice(null)
+  }
+
+  if (queue.length === 0) return (
     <div className="card text-center py-12">
       <p className="text-4xl mb-3">🎉</p>
       <p className="text-white text-sm">No words due for review!</p>
+      <p className="text-gray-500 text-xs mt-2">Add words in Vocabulary tab first.</p>
     </div>
   )
 
   if (done) return (
-    <div className="card text-center py-12">
-      <p className="text-4xl mb-3">✅</p>
-      <p className="text-white text-sm font-bold">Session complete!</p>
-      <button onClick={() => { setIdx(0); setFlipped(false); setDone(false) }}
-        className="btn-primary mt-4 px-6">Review Again</button>
+    <div className="card text-center py-12 space-y-3">
+      <p className="text-4xl">✅</p>
+      <p className="text-white font-bold">Session complete!</p>
+      <p className="text-green-400 text-sm">{correct} / {queue.length} correct</p>
+      <button onClick={() => { setIdx(0); setPhase('show'); setChoice(null); setDone(false); setStreak(0); setCorrect(0) }}
+        className="btn-primary px-6 mt-2">Review Again</button>
     </div>
   )
 
-  const card = due[idx]
+  const card = queue[idx]
+  const choices = phase !== 'show' ? buildChoices(card) : []
+  const progress = ((idx) / queue.length) * 100
+
   return (
-    <div className="max-w-md mx-auto space-y-4">
-      <p className="text-xs text-gray-500 text-center">{idx + 1} / {due.length} due</p>
-      <div className="card text-center cursor-pointer min-h-40 flex flex-col items-center justify-center gap-3"
-        onClick={() => setFlipped(f => !f)}>
-        {!flipped ? (
-          <>
-            <p className="text-white text-xl font-bold">{card.word}</p>
-            <p className="text-xs text-gray-500">Click to reveal</p>
-          </>
-        ) : (
-          <>
-            <p className="text-primary-400 text-xs italic">{card.part_of_speech}</p>
-            <p className="text-white text-sm">{card.definition}</p>
-            <p className="text-gray-400 text-xs italic">"{card.example}"</p>
-          </>
+    <div className="max-w-lg mx-auto space-y-4">
+      {/* Progress bar */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 bg-gray-800 h-2">
+          <div className="h-2 bg-primary-500 transition-all" style={{ width: `${progress}%` }} />
+        </div>
+        <span className="text-xs text-gray-500">{idx}/{queue.length}</span>
+        {streak >= 2 && <span className="text-xs text-orange-400">🔥 {streak}</span>}
+      </div>
+
+      {/* Word card */}
+      <div className="card text-center space-y-3 py-8">
+        <p className="text-primary-400 text-xs">{card.language} · {card.part_of_speech}</p>
+        <p className="text-white text-3xl font-bold">{card.word}</p>
+        {card.translation && <p className="text-gray-500 text-xs">({card.translation})</p>}
+        {phase === 'show' && (
+          <button onClick={() => setPhase('choices')} className="btn-primary px-6 mt-2">
+            What does this mean?
+          </button>
         )}
       </div>
-      {flipped && (
-        <div className="grid grid-cols-4 gap-2">
-          {[{q:0,l:'Forgot',c:'bg-red-600'},{q:2,l:'Hard',c:'bg-orange-500'},{q:4,l:'Good',c:'bg-blue-500'},{q:5,l:'Easy',c:'bg-green-500'}].map(({q,l,c}) => (
-            <button key={q} onClick={() => rate(q)} className={`${c} text-white text-xs font-bold py-2`}>{l}</button>
+
+      {/* Multiple choice */}
+      {phase === 'choices' && (
+        <div className="space-y-2">
+          <p className="text-gray-400 text-xs text-center">Choose the correct meaning:</p>
+          {choices.map((c, i) => (
+            <button key={i} onClick={() => answer(c)}
+              className="w-full text-left px-4 py-3 text-xs border border-gray-700 text-gray-200 hover:bg-gray-800 hover:border-primary-500 transition">
+              {c}
+            </button>
           ))}
+        </div>
+      )}
+
+      {/* Result */}
+      {phase === 'result' && choice && (
+        <div className="space-y-3">
+          <div className={`card border-l-4 ${choice.isCorrect ? 'border-green-500' : 'border-red-500'}`}>
+            <p className={`text-sm font-bold mb-1 ${choice.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+              {choice.isCorrect ? 'Correct!' : 'Not quite'}
+            </p>
+            {!choice.isCorrect && (
+              <p className="text-xs text-gray-300">Correct meaning: <span className="text-green-400">{choice.correct}</span></p>
+            )}
+            {card.example && <p className="text-xs text-gray-500 mt-1 italic">"{card.example}"</p>}
+          </div>
+          <button onClick={next} className="btn-primary w-full">
+            {idx + 1 >= queue.length ? 'Finish' : 'Next Word'}
+          </button>
         </div>
       )}
     </div>
@@ -385,96 +444,158 @@ function GrammarTab({ lang }) {
 }
 
 function WritingTab({ lang }) {
+  const [nativeLang, setNativeLang] = useState('Chinese')
   const [prompt, setPrompt] = useState('')
   const [text, setText] = useState('')
-  const [feedback, setFeedback] = useState(null)
+  const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [added, setAdded] = useState({}) // track which words were added to vocab
 
+  const NATIVE_LANGS = ['Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
   const PROMPTS = [
     'Describe your daily routine.',
     'Write about your favourite place.',
-    'What would you do with a million dollars?',
     'Describe a memorable experience.',
     'What are your goals for this year?',
+    'Talk about someone important to you.',
   ]
 
-  async function getFeedback() {
+  async function analyse() {
     if (!text.trim()) return
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setResult(null)
     try {
-      const res = await api.langWriting({ language: lang, prompt, text })
-      setFeedback(res)
+      const res = await api.langWriting({ language: lang, nativeLanguage: nativeLang, prompt, text })
+      setResult(res)
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
 
+  async function addToVocab(word) {
+    try {
+      await api.generateVocab({ word: word.translation, language: lang })
+      setAdded(a => ({ ...a, [word.original]: true }))
+    } catch (err) { setError('Failed to add: ' + err.message) }
+  }
+
+  // Highlight native words in the original text
+  function renderHighlighted() {
+    if (!result?.native_words?.length) return <span className="text-gray-300">{text}</span>
+    let remaining = text
+    const parts = []
+    result.native_words.forEach((w, i) => {
+      const idx = remaining.toLowerCase().indexOf(w.original.toLowerCase())
+      if (idx === -1) return
+      if (idx > 0) parts.push(<span key={`t${i}`} className="text-gray-300">{remaining.slice(0, idx)}</span>)
+      parts.push(
+        <span key={`h${i}`} className="bg-yellow-500/30 text-yellow-300 border-b border-yellow-400 cursor-help"
+          title={`${lang}: ${w.translation}`}>
+          {remaining.slice(idx, idx + w.original.length)}
+        </span>
+      )
+      remaining = remaining.slice(idx + w.original.length)
+    })
+    if (remaining) parts.push(<span key="end" className="text-gray-300">{remaining}</span>)
+    return parts
+  }
+
   return (
     <div className="space-y-4 max-w-2xl">
+      <div className="flex gap-3 flex-wrap">
+        <div className="flex-1">
+          <label className="label">Your native language</label>
+          <select className="input text-xs" value={nativeLang} onChange={e => setNativeLang(e.target.value)}>
+            {NATIVE_LANGS.map(l => <option key={l}>{l}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className="card border border-primary-900/50" style={{ background: '#0f172a' }}>
+        <p className="text-primary-400 text-xs mb-2">Tip: Write in {lang}. For words you don't know, just write them in {nativeLang} — AI will translate and highlight them for you to learn.</p>
+      </div>
+
       <div>
-        <label className="label">Writing Prompt</label>
+        <label className="label">Prompt (optional)</label>
         <div className="flex flex-wrap gap-2 mb-2">
           {PROMPTS.map(p => (
             <button key={p} onClick={() => setPrompt(p)}
-              className={`text-xs px-2 py-1 border transition ${prompt === p ? 'border-primary-500 text-primary-300 bg-primary-900/20' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}>
+              className={`text-xs px-2 py-1 border transition ${prompt === p ? 'border-primary-500 text-primary-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}>
               {p}
             </button>
           ))}
         </div>
-        <input className="input text-xs" value={prompt} onChange={e => setPrompt(e.target.value)}
-          placeholder="Or type your own prompt..." />
       </div>
+
       <div>
-        <label className="label">Your Writing ({text.length} chars)</label>
+        <label className="label">Your writing</label>
         <textarea className="input resize-none text-xs" rows={6} value={text}
-          onChange={e => setText(e.target.value)} placeholder={`Write in ${lang}...`} />
+          onChange={e => { setText(e.target.value); setResult(null) }}
+          placeholder={`Mix ${lang} and ${nativeLang} — e.g. "I love to 跑步 every morning..."`} />
       </div>
+
       {error && <p className="text-red-400 text-xs">{error}</p>}
-      <button onClick={getFeedback} disabled={loading || !text.trim()} className="btn-primary w-full">
-        {loading ? 'Analysing...' : 'Get AI Feedback'}
+      <button onClick={analyse} disabled={loading || !text.trim()} className="btn-primary w-full">
+        {loading ? 'Analysing...' : 'Analyse Writing'}
       </button>
 
-      {feedback && (
-        <div className="space-y-3">
-          <div className="card flex items-center gap-4">
-            <div className="text-3xl font-bold" style={{ color: feedback.score >= 70 ? '#10b981' : feedback.score >= 50 ? '#f59e0b' : '#ef4444' }}>
-              {feedback.score}%
+      {result && (
+        <div className="space-y-4">
+          {/* AI detection warning */}
+          {result.ai_score > 60 && (
+            <div className="card border border-orange-800" style={{ background: '#1c1008' }}>
+              <p className="text-orange-400 text-xs font-bold mb-1">AI Content Detected ({result.ai_score}%)</p>
+              <p className="text-orange-300 text-xs">{result.ai_warning}</p>
+              <p className="text-gray-500 text-xs mt-1">Try writing more naturally in your own voice.</p>
             </div>
-            <p className="text-gray-300 text-xs">{feedback.summary}</p>
+          )}
+
+          {/* Highlighted text */}
+          <div className="card">
+            <p className="text-gray-400 text-xs mb-2 font-bold">Your text with highlights:</p>
+            <p className="text-xs leading-relaxed">{renderHighlighted()}</p>
           </div>
-          {feedback.corrections?.length > 0 && (
-            <div className="card">
-              <h3 className="text-white text-xs font-bold mb-2">Corrections</h3>
-              {feedback.corrections.map((c, i) => (
-                <div key={i} className="mb-2 text-xs">
-                  <span className="text-red-400 line-through">{c.original}</span>
-                  <span className="text-gray-500 mx-1"> → </span>
-                  <span className="text-green-400">{c.corrected}</span>
-                  <span className="text-gray-500 ml-2">({c.explanation})</span>
+
+          {/* Native words → vocab */}
+          {result.native_words?.length > 0 && (
+            <div className="card space-y-3">
+              <p className="text-yellow-400 text-xs font-bold">{result.native_words.length} word{result.native_words.length !== 1 ? 's' : ''} to learn:</p>
+              {result.native_words.map((w, i) => (
+                <div key={i} className="flex items-start gap-3 p-2 border border-gray-700">
+                  <div className="flex-1">
+                    <span className="text-yellow-300 text-xs font-bold">{w.original}</span>
+                    <span className="text-gray-500 text-xs mx-2">→</span>
+                    <span className="text-green-400 text-xs font-bold">{w.translation}</span>
+                    <p className="text-gray-400 text-xs mt-0.5">{w.definition}</p>
+                    {w.example && <p className="text-gray-600 text-xs italic">"{w.example}"</p>}
+                  </div>
+                  <button
+                    onClick={() => addToVocab(w)}
+                    disabled={added[w.original]}
+                    className={`text-xs px-2 py-1 shrink-0 transition ${added[w.original] ? 'text-green-500 border border-green-800' : 'btn-primary'}`}>
+                    {added[w.original] ? 'Added' : '+ Vocab'}
+                  </button>
                 </div>
               ))}
             </div>
           )}
-          <div className="grid sm:grid-cols-2 gap-3">
-            {feedback.strengths?.length > 0 && (
-              <div className="card">
-                <h3 className="text-green-400 text-xs font-bold mb-2">Strengths</h3>
-                {feedback.strengths.map((s, i) => <p key={i} className="text-gray-300 text-xs">- {s}</p>)}
+
+          {/* Feedback */}
+          <div className="card space-y-2">
+            <p className="text-white text-xs font-bold">Feedback</p>
+            <p className="text-gray-300 text-xs">{result.feedback}</p>
+            {result.strengths?.length > 0 && (
+              <div>
+                <p className="text-green-400 text-xs font-bold mt-2">Strengths</p>
+                {result.strengths.map((s, i) => <p key={i} className="text-gray-400 text-xs">- {s}</p>)}
               </div>
             )}
-            {feedback.improvements?.length > 0 && (
-              <div className="card">
-                <h3 className="text-yellow-400 text-xs font-bold mb-2">Improve</h3>
-                {feedback.improvements.map((s, i) => <p key={i} className="text-gray-300 text-xs">- {s}</p>)}
+            {result.suggestions?.length > 0 && (
+              <div>
+                <p className="text-yellow-400 text-xs font-bold mt-2">Suggestions</p>
+                {result.suggestions.map((s, i) => <p key={i} className="text-gray-400 text-xs">- {s}</p>)}
               </div>
             )}
           </div>
-          {feedback.corrected_text && (
-            <div className="card">
-              <h3 className="text-primary-400 text-xs font-bold mb-2">Corrected Version</h3>
-              <p className="text-gray-300 text-xs leading-relaxed">{feedback.corrected_text}</p>
-            </div>
-          )}
         </div>
       )}
     </div>
