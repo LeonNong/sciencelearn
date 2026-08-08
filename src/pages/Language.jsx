@@ -496,6 +496,12 @@ function WritingTab({ lang }) {
     <div className="space-y-4 max-w-2xl">
       <div className="flex gap-3 flex-wrap">
         <div className="flex-1">
+          <label className="label">Writing language</label>
+          <select className="input text-xs" value={lang} disabled>
+            <option>{lang}</option>
+          </select>
+        </div>
+        <div className="flex-1">
           <label className="label">Home language</label>
           <select className="input text-xs" value={nativeLang} onChange={e => setNativeLang(e.target.value)}>
             {NATIVE_LANGS.map(l => <option key={l}>{l}</option>)}
