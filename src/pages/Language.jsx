@@ -444,7 +444,7 @@ function GrammarTab({ lang }) {
 }
 
 function WritingTab({ lang }) {
-  const [nativeLang, setNativeLang] = useState('Chinese')
+  const [nativeLang, setNativeLang] = useState('English')
   const [prompt, setPrompt] = useState('')
   const [text, setText] = useState('')
   const [result, setResult] = useState(null)
@@ -452,7 +452,7 @@ function WritingTab({ lang }) {
   const [error, setError] = useState('')
   const [added, setAdded] = useState({}) // track which words were added to vocab
 
-  const NATIVE_LANGS = ['Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
+  const NATIVE_LANGS = ['English', 'Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
 
   async function analyse() {
     if (!text.trim()) return
@@ -496,7 +496,7 @@ function WritingTab({ lang }) {
     <div className="space-y-4 max-w-2xl">
       <div className="flex gap-3 flex-wrap">
         <div className="flex-1">
-          <label className="label">Your native language</label>
+          <label className="label">Home language</label>
           <select className="input text-xs" value={nativeLang} onChange={e => setNativeLang(e.target.value)}>
             {NATIVE_LANGS.map(l => <option key={l}>{l}</option>)}
           </select>
