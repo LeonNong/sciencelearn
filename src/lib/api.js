@@ -79,6 +79,7 @@ export const api = {
   // Grades
   getGrades: () => req('/grades'),
   scanGrades: (image, mimeType) => post('/grades/scan', { image, mimeType }),
+  scanComments: (image, mimeType) => post('/grades/scan-comments', { image, mimeType }),
   addGrade: (d) => post('/grades', d),
   deleteGrade: (id) => del(`/grades/${id}`),
   // Rooms

@@ -65,10 +65,6 @@ function ScanModal({ extracted, onConfirm, onClose }) {
                   onChange={e => update(i, 'date', e.target.value)} />
                 <button onClick={() => remove(i)} className="text-red-400 hover:text-red-600 px-1">✕</button>
               </div>
-              {item.comment && (
-                <input className="input py-1 text-xs w-full" value={item.comment}
-                  onChange={e => update(i, 'comment', e.target.value)} placeholder="Teacher comment" />
-              )}
             </div>
           ))}
           {items.length === 0 && <p className="text-center text-gray-400 py-6">No entries left.</p>}
@@ -254,14 +250,7 @@ export default function Grades() {
       legend: { position: 'bottom' },
       tooltip: {
         callbacks: {
-          label: ctx => {
-            const score = ctx.raw
-            const sym = gradeSymbol(score)
-            const comment = ctx.dataset.comments?.[ctx.dataIndex]
-            const lines = [`${ctx.dataset.label}: ${score}% (${sym.label})`]
-            if (comment) lines.push(`💬 ${comment}`)
-            return lines
-          }
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw}% (${gradeSymbol(ctx.raw).label})`
         }
       }
     },
@@ -515,9 +504,6 @@ export default function Grades() {
                             <div className="flex-1 min-w-0">
                               <span className="text-white text-sm">{g.label}</span>
                               <span className="text-xs text-gray-500 ml-2">{g.date}</span>
-                              {g.comment && (
-                                <p className="text-xs text-gray-400 mt-0.5 italic">💬 {g.comment}</p>
-                              )}
                             </div>
                             <div className="text-right">
                               <span className="font-bold text-sm" style={{ color }}>{g.score}%</span>

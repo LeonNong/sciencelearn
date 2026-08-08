@@ -587,6 +587,45 @@ Rules:
   }
 });
 
+// Scan image/PDF and extract teacher comments per subject
+app.post('/api/grades/scan-comments', authMiddleware, async (req, res) => {
+  const { image, mimeType } = req.body;
+  if (!image) return res.status(400).json({ error: 'Image required' });
+
+  const prompt = `You are analysing a student's report card image.
+Extract ALL teacher comments, remarks, or feedback visible for each subject.
+Return ONLY valid JSON — no markdown, no explanation:
+[
+  { "subject": "Mathematics", "comment": "Good progress but needs to work on algebra.", "date": "2025-03-15" },
+  ...
+]
+
+Rules:
+- subject should match one of: Biology, Chemistry, Physics, Mathematics, Mathematical Literacy, English, English HL, Afrikaans, Afrikaans FAL, isiZulu, Life Orientation — or use the exact name shown
+- comment must be the exact teacher remark/comment text as written on the report card
+- date should be the report card date in YYYY-MM-DD format; use today if not visible
+- Only include subjects that actually have a visible comment
+- If no comments are found at all, return an empty array []`;
+
+  const result = await callGeminiVision(prompt, image, mimeType || 'image/jpeg');
+  if (result.error) return res.status(503).json({ error: result.error });
+
+  try {
+    let text = result.text || '';
+    text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) {
+      console.error('Scan-comments raw response:', text.slice(0, 500));
+      return res.json({ comments: [] });
+    }
+    const comments = JSON.parse(match[0]);
+    res.json({ comments: Array.isArray(comments) ? comments : [comments] });
+  } catch (e) {
+    console.error('Scan-comments parse error:', e.message);
+    res.json({ comments: [] });
+  }
+});
+
 app.get('/api/grades', authMiddleware, async (req, res) => {
   try {
     const { createClient } = require('@supabase/supabase-js');
