@@ -584,6 +584,9 @@ export default function Grades() {
                             <div className="flex-1 min-w-0">
                               <span className="text-white text-sm">{g.label}</span>
                               <span className="text-xs text-gray-500 ml-2">{g.date}</span>
+                              {g.comment && (
+                                <p className="text-xs text-gray-400 mt-1 italic leading-relaxed">💬 {g.comment}</p>
+                              )}
                             </div>
                             <div className="text-right">
                               <span className="font-bold text-sm" style={{ color }}>{g.score}%</span>
