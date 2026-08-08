@@ -138,6 +138,9 @@ function ScanModal({ extracted, onConfirm, onClose }) {
 
 // Grade Tracker 主页面：负责保存、读取、扫描、统计和展示成绩数据。
 export default function Grades() {
+  const currentYear = new Date().getFullYear()
+  const YEARS = Array.from({ length: 6 }, (_, i) => currentYear - i)
+  const [selectedYear, setSelectedYear] = useState(currentYear)
   const [grades, setGrades] = useState([])
   const [form, setForm] = useState({ subject: 'Biology', label: '', score: '', date: new Date().toISOString().split('T')[0] })
   const [activeSubject, setActiveSubject] = useState('All')
@@ -206,7 +209,9 @@ export default function Grades() {
   // 页面首次加载时，从后端拉取该用户已经保存的所有成绩记录。
   useEffect(() => { api.getGrades().then(setGrades).catch(() => {}) }, [])
 
-  const subjects = [...new Set(grades.map(g => g.subject))]
+  // Filter grades by selected year
+  const yearGrades = grades.filter(g => g.date?.startsWith(String(selectedYear)))
+  const subjects = [...new Set(yearGrades.map(g => g.subject))]
 
   // 手动新增一条成绩记录，表单提交后会直接保存到后端数据库。
   async function addGrade(e) {
@@ -285,13 +290,13 @@ export default function Grades() {
     finally { setLoading(false) }
   }
   const filteredSubjects = activeSubject === 'All' ? subjects : [activeSubject]
-  const allDates = [...new Set(grades.map(g => g.date))].sort()
+  const allDates = [...new Set(yearGrades.map(g => g.date))].sort()
 
   const chartData = {
     labels: allDates,
     datasets: filteredSubjects.map(subj => {
       const color = SUBJECT_COLORS[subj] || '#6b7280'
-      const subjGrades = grades.filter(g => g.subject === subj)
+      const subjGrades = yearGrades.filter(g => g.subject === subj)
       return {
         label: subj,
         data: allDates.map(d => {
@@ -335,7 +340,7 @@ export default function Grades() {
 
   // 统计每个科目的平均分、最新成绩和趋势，用于主页卡片展示。
   const stats = subjects.map(subj => {
-    const sg = grades.filter(g => g.subject === subj)
+    const sg = yearGrades.filter(g => g.subject === subj)
     const avg = sg.length ? Math.round(sg.reduce((a, b) => a + b.score, 0) / sg.length) : 0
     const latest = sg[sg.length - 1]
     const prev = sg[sg.length - 2]
@@ -353,7 +358,17 @@ export default function Grades() {
         />
       )}
 
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📈 Grade Tracker</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📈 Grade Tracker</h1>
+        <select className="input w-auto py-1 text-sm" value={selectedYear}
+          onChange={e => {
+            const y = Number(e.target.value)
+            setSelectedYear(y)
+            setForm(f => ({ ...f, date: f.date.replace(/^\d{4}/, String(y)) }))
+          }}>
+          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Add grade form */}
@@ -511,7 +526,7 @@ export default function Grades() {
       </div>
 
       {/* Line chart */}
-      {grades.length > 0 && (
+      {yearGrades.length > 0 && (
         <div className="card">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h2 className="font-bold text-gray-900 dark:text-white">Performance Over Time</h2>
@@ -531,7 +546,7 @@ export default function Grades() {
       )}
 
       {/* Grade history — grouped by subject, collapsible */}
-      {grades.length > 0 && (
+      {yearGrades.length > 0 && (
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-white">All Results</h2>
@@ -556,7 +571,7 @@ export default function Grades() {
           </div>
           <div className="space-y-2">
             {subjects.map(subj => {
-              const subjGrades = [...grades].filter(g => g.subject === subj).reverse()
+              const subjGrades = [...yearGrades].filter(g => g.subject === subj).reverse()
               const color = SUBJECT_COLORS[subj] || '#6b7280'
               const isOpen = expandedSubjects[subj] ?? false
               const avg = Math.round(subjGrades.reduce((a, b) => a + b.score, 0) / subjGrades.length)
