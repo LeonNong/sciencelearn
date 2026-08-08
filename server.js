@@ -555,7 +555,7 @@ Subject names should match one of: Biology, Chemistry, Physics, Mathematics, Mat
 
 Return ONLY valid JSON — no markdown, no explanation:
 [
-  { "subject": "Mathematics", "label": "Term 1 Test", "score": 72, "date": "2025-03-15" },
+  { "subject": "Mathematics", "label": "Term 1 Test", "score": 72, "date": "2025-03-15", "comment": "Good effort, needs to revise algebra." },
   ...
 ]
 
@@ -563,6 +563,7 @@ Rules:
 - score must be a number 0-100 (convert fractions like 13/20 to percentage: 65)
 - date must be YYYY-MM-DD format
 - label should be the assessment name as shown
+- comment should be the teacher's remark or comment for that subject/assessment if visible; use null if none
 - If you cannot read the score clearly, skip that item`;
 
   const result = await callGeminiVision(prompt, image, mimeType || 'image/jpeg');
@@ -590,14 +591,14 @@ app.get('/api/grades', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/grades', authMiddleware, async (req, res) => {
-  const { subject, label, score, date } = req.body;
+  const { subject, label, score, date, comment } = req.body;
   if (!subject || !label || score === undefined || !date) return res.status(400).json({ error: 'All fields required' });
   if (score < 0 || score > 100) return res.status(400).json({ error: 'Score must be 0-100' });
   try {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
     const { data, error } = await supabase.from('exam_grades').insert({
-      user_id: req.user.id, subject, label, score: Number(score), date
+      user_id: req.user.id, subject, label, score: Number(score), date, comment: comment || null
     }).select().single();
     if (error) throw error;
     res.json(data);

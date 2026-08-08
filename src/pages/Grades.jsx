@@ -51,18 +51,24 @@ function ScanModal({ extracted, onConfirm, onClose }) {
         </div>
         <div className="overflow-y-auto flex-1 p-5 space-y-3">
           {items.map((item, i) => (
-            <div key={i} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 grid grid-cols-[1fr_1fr_auto_auto_auto] gap-2 items-center text-sm">
-              <select className="input py-1 text-xs" value={item.subject}
-                onChange={e => update(i, 'subject', e.target.value)}>
-                {SUBJECTS.map(s => <option key={s}>{s}</option>)}
-              </select>
-              <input className="input py-1 text-xs" value={item.label}
-                onChange={e => update(i, 'label', e.target.value)} placeholder="Test name" />
-              <input className="input py-1 text-xs w-16" type="number" min="0" max="100" value={item.score}
-                onChange={e => update(i, 'score', e.target.value)} />
-              <input className="input py-1 text-xs w-28" type="date" value={item.date}
-                onChange={e => update(i, 'date', e.target.value)} />
-              <button onClick={() => remove(i)} className="text-red-400 hover:text-red-600 px-1">✕</button>
+            <div key={i} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 space-y-2 text-sm">
+              <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-2 items-center">
+                <select className="input py-1 text-xs" value={item.subject}
+                  onChange={e => update(i, 'subject', e.target.value)}>
+                  {SUBJECTS.map(s => <option key={s}>{s}</option>)}
+                </select>
+                <input className="input py-1 text-xs" value={item.label}
+                  onChange={e => update(i, 'label', e.target.value)} placeholder="Test name" />
+                <input className="input py-1 text-xs w-16" type="number" min="0" max="100" value={item.score}
+                  onChange={e => update(i, 'score', e.target.value)} />
+                <input className="input py-1 text-xs w-28" type="date" value={item.date}
+                  onChange={e => update(i, 'date', e.target.value)} />
+                <button onClick={() => remove(i)} className="text-red-400 hover:text-red-600 px-1">✕</button>
+              </div>
+              {item.comment && (
+                <input className="input py-1 text-xs w-full" value={item.comment}
+                  onChange={e => update(i, 'comment', e.target.value)} placeholder="Teacher comment" />
+              )}
             </div>
           ))}
           {items.length === 0 && <p className="text-center text-gray-400 py-6">No entries left.</p>}
@@ -226,6 +232,11 @@ export default function Grades() {
           const g = subjGrades.find(g => g.date === d)
           return g ? g.score : null
         }),
+        // store comment per data point for tooltip
+        comments: allDates.map(d => {
+          const g = subjGrades.find(g => g.date === d)
+          return g ? (g.comment || null) : null
+        }),
         borderColor: color,
         backgroundColor: color + '20',
         fill: false,
@@ -243,7 +254,14 @@ export default function Grades() {
       legend: { position: 'bottom' },
       tooltip: {
         callbacks: {
-          label: ctx => `${ctx.dataset.label}: ${ctx.raw}% (${gradeSymbol(ctx.raw).label})`
+          label: ctx => {
+            const score = ctx.raw
+            const sym = gradeSymbol(score)
+            const comment = ctx.dataset.comments?.[ctx.dataIndex]
+            const lines = [`${ctx.dataset.label}: ${score}% (${sym.label})`]
+            if (comment) lines.push(`💬 ${comment}`)
+            return lines
+          }
         }
       }
     },
@@ -497,6 +515,9 @@ export default function Grades() {
                             <div className="flex-1 min-w-0">
                               <span className="text-white text-sm">{g.label}</span>
                               <span className="text-xs text-gray-500 ml-2">{g.date}</span>
+                              {g.comment && (
+                                <p className="text-xs text-gray-400 mt-0.5 italic">💬 {g.comment}</p>
+                              )}
                             </div>
                             <div className="text-right">
                               <span className="font-bold text-sm" style={{ color }}>{g.score}%</span>

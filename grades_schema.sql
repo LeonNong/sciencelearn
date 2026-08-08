@@ -8,6 +8,7 @@ create table if not exists exam_grades (
   label text not null,        -- e.g. "Term 1 Test", "Mid-year Exam"
   score numeric not null,     -- percentage 0-100
   date text not null,         -- YYYY-MM-DD
+  comment text,               -- teacher comment / remark from report card
   created_at timestamptz not null default now()
 );
 
