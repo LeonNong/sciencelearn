@@ -89,13 +89,13 @@ function VocabTab({ lang }) {
                 <span className="text-xs text-gray-500 ml-2 italic">{v.part_of_speech}</span>
                 {v.translation && <span className="text-xs text-primary-400 ml-2">({v.translation})</span>}
               </div>
-              <button onClick={() => remove(v.id)} className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 text-xs transition">âœ•</button>
+              <button onClick={() => remove(v.id)} className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 text-xs transition">âœ?/button>
             </div>
             <p className="text-gray-300 text-xs">{v.definition}</p>
             <p className="text-gray-500 text-xs italic">"{v.example}"</p>
             <div className="flex gap-2 text-xs">
-              <span className="text-green-400">âœ“ {v.correct}</span>
-              <span className="text-red-400">âœ— {v.incorrect}</span>
+              <span className="text-green-400">âœ?{v.correct}</span>
+              <span className="text-red-400">âœ?{v.incorrect}</span>
             </div>
           </div>
         ))}
@@ -137,7 +137,7 @@ function ReviewTab() {
 
   if (done) return (
     <div className="card text-center py-12">
-      <p className="text-4xl mb-3">âœ…</p>
+      <p className="text-4xl mb-3">âœ?/p>
       <p className="text-white text-sm font-bold">Session complete!</p>
       <button onClick={() => { setIdx(0); setFlipped(false); setDone(false) }} className="btn-primary mt-4 px-6">Review Again</button>
     </div>
@@ -237,7 +237,7 @@ function QuizTab({ lang }) {
         </select>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
-      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : 'âœ¨ Generate Quiz'}</button>
+      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : 'âœ?Generate Quiz'}</button>
     </div>
   )
 
@@ -265,7 +265,7 @@ function QuizTab({ lang }) {
           )}
         </div>
       ))}
-      <button onClick={submit} className="btn-primary w-full">âœ… Submit</button>
+      <button onClick={submit} className="btn-primary w-full">âœ?Submit</button>
     </div>
   )
 }
@@ -327,7 +327,7 @@ function GrammarTab({ lang }) {
         </select>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
-      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : 'âœ¨ Generate Exercises'}</button>
+      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : 'âœ?Generate Exercises'}</button>
     </div>
   )
 
@@ -356,7 +356,7 @@ function GrammarTab({ lang }) {
           )}
         </div>
       ))}
-      <button onClick={submit} className="btn-primary w-full">âœ… Submit</button>
+      <button onClick={submit} className="btn-primary w-full">âœ?Submit</button>
     </div>
   )
 }
@@ -408,7 +408,7 @@ function WritingTab({ lang }) {
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
       <button onClick={getFeedback} disabled={loading || !text.trim()} className="btn-primary w-full">
-        {loading ? 'ðŸ¤– Analysing...' : 'âœ¨ Get AI Feedback'}
+        {loading ? 'ðŸ¤– Analysing...' : 'âœ?Get AI Feedback'}
       </button>
 
       {feedback && (
@@ -425,7 +425,7 @@ function WritingTab({ lang }) {
               {feedback.corrections.map((c, i) => (
                 <div key={i} className="mb-2 text-xs">
                   <span className="text-red-400 line-through">{c.original}</span>
-                  <span className="text-gray-500 mx-1">â†’</span>
+                  <span className="text-gray-500 mx-1">â†?/span>
                   <span className="text-green-400">{c.corrected}</span>
                   <span className="text-gray-500 ml-2">({c.explanation})</span>
                 </div>
@@ -436,19 +436,19 @@ function WritingTab({ lang }) {
             {feedback.strengths?.length > 0 && (
               <div className="card">
                 <h3 className="text-green-400 text-xs font-bold mb-2">ðŸ’ª Strengths</h3>
-                {feedback.strengths.map((s, i) => <p key={i} className="text-gray-300 text-xs">â€¢ {s}</p>)}
+                {feedback.strengths.map((s, i) => <p key={i} className="text-gray-300 text-xs">â€?{s}</p>)}
               </div>
             )}
             {feedback.improvements?.length > 0 && (
               <div className="card">
                 <h3 className="text-yellow-400 text-xs font-bold mb-2">ðŸŽ¯ Improve</h3>
-                {feedback.improvements.map((s, i) => <p key={i} className="text-gray-300 text-xs">â€¢ {s}</p>)}
+                {feedback.improvements.map((s, i) => <p key={i} className="text-gray-300 text-xs">â€?{s}</p>)}
               </div>
             )}
           </div>
           {feedback.corrected_text && (
             <div className="card">
-              <h3 className="text-primary-400 text-xs font-bold mb-2">âœ… Corrected Version</h3>
+              <h3 className="text-primary-400 text-xs font-bold mb-2">âœ?Corrected Version</h3>
               <p className="text-gray-300 text-xs leading-relaxed">{feedback.corrected_text}</p>
             </div>
           )}
@@ -529,7 +529,7 @@ function ProgressTab() {
           <div className="flex flex-wrap gap-2">
             {struggling.map(v => (
               <span key={v.id} className="text-xs px-2 py-1 border border-red-800 text-red-400">
-                {v.word} ({v.incorrect}âœ—)
+                {v.word} ({v.incorrect}âœ?
               </span>
             ))}
           </div>
@@ -538,3 +538,4 @@ function ProgressTab() {
     </div>
   )
 }
+
