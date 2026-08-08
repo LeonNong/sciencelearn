@@ -91,11 +91,21 @@ function parseAdamHtml(htmlText) {
 // AI 扫描结果确认弹窗：展示模型识别出的成绩列表，允许用户在保存前修改或删除。
 function ScanModal({ extracted, onConfirm, onClose }) {
   const [items, setItems] = useState(extracted)
+  const currentYear = new Date().getFullYear()
+  const YEARS = Array.from({ length: 6 }, (_, i) => currentYear - i)
+  const [bulkYear, setBulkYear] = useState(currentYear)
 
   function update(i, field, val) {
     setItems(prev => prev.map((it, idx) => idx === i ? { ...it, [field]: field === 'score' ? Number(val) : val } : it))
   }
   function remove(i) { setItems(prev => prev.filter((_, idx) => idx !== i)) }
+
+  function applyBulkYear() {
+    setItems(prev => prev.map(it => ({
+      ...it,
+      date: it.date ? it.date.replace(/^\d{4}/, String(bulkYear)) : `${bulkYear}-01-01`
+    })))
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -103,6 +113,16 @@ function ScanModal({ extracted, onConfirm, onClose }) {
         <div className="p-5 border-b dark:border-gray-700">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">📋 AI Extracted Grades</h2>
           <p className="text-sm text-gray-500 mt-1">Review and edit before saving. Remove any incorrect entries.</p>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs text-gray-400">Set year for all:</span>
+            <select className="input py-1 text-xs w-28" value={bulkYear}
+              onChange={e => setBulkYear(Number(e.target.value))}>
+              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <button onClick={applyBulkYear} className="btn-primary px-3 py-1 text-xs">
+              Apply to All
+            </button>
+          </div>
         </div>
         <div className="overflow-y-auto flex-1 p-5 space-y-3">
           {items.map((item, i) => (
