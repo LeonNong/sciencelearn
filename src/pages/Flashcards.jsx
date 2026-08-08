@@ -102,7 +102,7 @@ export default function Flashcards() {
                         <button onClick={e => { e.stopPropagation(); deleteCard(c.id) }} className="text-gray-300 hover:text-red-500 transition text-xs">✕</button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
+                    <p className="text-sm text-white leading-relaxed">
                       {flipped[c.id] ? c.answer : c.question}
                     </p>
                     <p className="text-xs text-gray-400 mt-2">Click to {flipped[c.id] ? 'see question' : 'reveal answer'}</p>
@@ -123,7 +123,7 @@ export default function Flashcards() {
               : <div className="card max-w-md mx-auto">
                   <div className="text-xs text-gray-400 mb-4">{reviewIdx + 1} / {dueCards.length}</div>
                   <div className="min-h-32 flex items-center justify-center mb-6">
-                    <p className="text-lg text-gray-900 dark:text-white font-medium">
+                    <p className="text-lg text-white font-medium">
                       {showAnswer ? dueCards[reviewIdx].answer : dueCards[reviewIdx].question}
                     </p>
                   </div>

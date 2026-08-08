@@ -109,7 +109,7 @@ export default function Quiz() {
       <div className="space-y-5">
         {questions.map((q, i) => (
           <div key={q.id} className="card">
-            <p className="font-semibold text-gray-900 dark:text-white mb-3">
+            <p className="font-semibold text-white mb-3">
               <span className="text-primary-500 mr-2">Q{i + 1}.</span>{q.question}
             </p>
             {q.type === 'mcq' ? (
