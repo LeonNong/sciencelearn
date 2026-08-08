@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 export default function Auth() {
   const { login } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
-  const [form, setForm] = useState({ username: '', email: '', password: '' })
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -15,6 +15,10 @@ export default function Auth() {
     e.preventDefault()
     setError(''); setLoading(true)
     try {
+      if (!isLogin && form.password !== form.confirmPassword) {
+        setLoading(false)
+        return setError('Passwords do not match')
+      }
       const res = isLogin
         ? await api.login({ email: form.email, password: form.password })
         : await api.register(form)
@@ -116,6 +120,12 @@ export default function Auth() {
               <label className="label">Password</label>
               <input className="input" type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="••••••••" required />
             </div>
+            {!isLogin && (
+              <div>
+                <label className="label">Confirm Password</label>
+                <input className="input" type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="••••••••" required />
+              </div>
+            )}
             {error && (
               <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: '#ef4444', background: '#1a0a0a', border: '2px solid #ef4444', padding: '8px 12px' }}>
                 ❌ {error}
