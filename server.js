@@ -570,11 +570,19 @@ Rules:
   if (result.error) return res.status(503).json({ error: result.error });
 
   try {
-    const match = result.text.match(/\[[\s\S]*\]/);
-    if (!match) return res.status(422).json({ error: 'Could not extract grades from image. Try a clearer photo.' });
+    let text = result.text || '';
+    // Strip markdown code fences if present
+    text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) {
+      console.error('Grade scan raw response:', text.slice(0, 500));
+      return res.status(422).json({ error: 'Could not extract grades from image. Try a clearer photo.' });
+    }
     const grades = JSON.parse(match[0]);
-    res.json({ grades });
-  } catch {
+    // Wrap single object in array just in case
+    res.json({ grades: Array.isArray(grades) ? grades : [grades] });
+  } catch (e) {
+    console.error('Grade scan parse error:', e.message, result.text?.slice(0, 500));
     res.status(422).json({ error: 'Could not parse grades from image. Try a clearer photo.' });
   }
 });
