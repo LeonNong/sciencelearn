@@ -140,12 +140,13 @@ function ScanModal({ extracted, onConfirm, onClose }) {
 export default function Grades() {
   const currentYear = new Date().getFullYear()
   const YEARS = Array.from({ length: 6 }, (_, i) => currentYear - i)
-  const [selectedYear, setSelectedYear] = useState(currentYear)
+  const [selectedYear, setSelectedYear] = useState('All')
   const [grades, setGrades] = useState([])
 
   function defaultDate(year) {
     const now = new Date()
-    return `${year}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+    const y = year === 'All' ? currentYear : year
+    return `${y}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
   }
 
   const [form, setForm] = useState({ subject: 'Biology', label: '', score: '', date: defaultDate(currentYear) })
@@ -215,8 +216,8 @@ export default function Grades() {
   // 页面首次加载时，从后端拉取该用户已经保存的所有成绩记录。
   useEffect(() => { api.getGrades().then(setGrades).catch(() => {}) }, [])
 
-  // Filter grades by selected year
-  const yearGrades = grades.filter(g => g.date?.startsWith(String(selectedYear)))
+  // Filter grades by selected year, or show all
+  const yearGrades = selectedYear === 'All' ? grades : grades.filter(g => g.date?.startsWith(String(selectedYear)))
   const subjects = [...new Set(yearGrades.map(g => g.subject))]
 
   // 手动新增一条成绩记录，表单提交后会直接保存到后端数据库。
@@ -370,10 +371,11 @@ export default function Grades() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📈 Grade Tracker</h1>
         <select className="input w-auto py-1 text-sm" value={selectedYear}
           onChange={e => {
-            const y = Number(e.target.value)
+            const y = e.target.value === 'All' ? 'All' : Number(e.target.value)
             setSelectedYear(y)
             setForm(f => ({ ...f, date: defaultDate(y) }))
           }}>
+          <option value="All">All Years</option>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
