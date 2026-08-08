@@ -3,20 +3,31 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Loader from '../components/Loader'
-import { Bar, Doughnut } from 'react-chartjs-2'
-import { Chart, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Line, Doughnut } from 'react-chartjs-2'
+import {
+  Chart, CategoryScale, LinearScale, PointElement, LineElement,
+  ArcElement, Tooltip, Legend, Filler
+} from 'chart.js'
 
-Chart.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend)
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler)
 
-const SUBJECT_COLORS = { Biology: '#10b981', Chemistry: '#8b5cf6', Physics: '#f59e0b' }
+const SUBJECT_COLORS = {
+  Biology: '#10b981', Chemistry: '#8b5cf6', Physics: '#f59e0b',
+  Mathematics: '#3b82f6', 'Mathematical Literacy': '#06b6d4',
+  English: '#ec4899', 'English HL': '#ec4899', Afrikaans: '#f97316',
+  'Afrikaans FAL': '#f97316', isiZulu: '#84cc16', 'Life Orientation': '#a78bfa',
+  'Information Technology': '#64748b', 'Physical Sciences': '#f59e0b', 'Life Sciences': '#10b981',
+}
 
 export default function Dashboard() {
   const { user } = useAuth()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [grades, setGrades] = useState([])
 
   useEffect(() => {
     api.dashboard().then(setData).catch(() => {}).finally(() => setLoading(false))
+    api.getGrades().then(setGrades).catch(() => {})
   }, [])
 
   if (loading) return <Loader className="py-20" />
@@ -74,23 +85,44 @@ export default function Dashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Quiz history chart */}
+        {/* Grade tracker line chart */}
         <div className="card">
-          <h2 className="font-bold text-gray-900 dark:text-white mb-4">Recent Quiz Scores</h2>
-          {data?.quizzes?.length > 0 ? (
-            <Bar
-              data={{
-                labels: data.quizzes.slice(0, 7).map((q, i) => `#${i + 1} ${q.subject}`),
-                datasets: [{
-                  label: 'Score %',
-                  data: data.quizzes.slice(0, 7).map(q => Math.round((q.score / q.total) * 100)),
-                  backgroundColor: data.quizzes.slice(0, 7).map(q => SUBJECT_COLORS[q.subject] || '#3b82f6'),
-                  borderRadius: 6,
-                }]
-              }}
-              options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { max: 100, beginAtZero: true } } }}
-            />
-          ) : <p className="text-gray-400 text-sm text-center py-8">No quizzes yet — take your first quiz!</p>}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-white">📈 Grade Tracker</h2>
+            <Link to="/grades" className="text-xs text-primary-400 hover:text-primary-300 transition">View all →</Link>
+          </div>
+          {grades.length > 0 ? (() => {
+            const subjects = [...new Set(grades.map(g => g.subject))]
+            const allDates = [...new Set(grades.map(g => g.date))].sort()
+            return (
+              <Line
+                data={{
+                  labels: allDates,
+                  datasets: subjects.map(subj => {
+                    const color = SUBJECT_COLORS[subj] || '#6b7280'
+                    const sg = grades.filter(g => g.subject === subj)
+                    return {
+                      label: subj,
+                      data: allDates.map(d => { const g = sg.find(g => g.date === d); return g ? g.score : null }),
+                      borderColor: color,
+                      backgroundColor: color + '20',
+                      fill: false,
+                      tension: 0.3,
+                      pointRadius: 4,
+                      spanGaps: true,
+                    }
+                  })
+                }}
+                options={{
+                  responsive: true,
+                  plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}%` } } },
+                  scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: '#6b7280' }, grid: { color: '#1f2937' } }, x: { ticks: { color: '#6b7280' } } }
+                }}
+              />
+            )
+          })() : (
+            <p className="text-gray-500 text-sm text-center py-8">No grades yet — <Link to="/grades" className="text-primary-400 hover:underline">add your first result</Link></p>
+          )}
         </div>
 
         {/* Study time chart */}
