@@ -712,6 +712,157 @@ app.delete('/api/notes/:id', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ==================== LANGUAGE LEARNING ====================
+
+function supabase() {
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+}
+
+// GET vocab words for user
+app.get('/api/lang/vocab', authMiddleware, async (req, res) => {
+  try {
+    const { data, error } = await supabase().from('lang_vocab').select('*')
+      .eq('user_id', req.user.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// AI generate vocab entry
+app.post('/api/lang/vocab/generate', authMiddleware, async (req, res) => {
+  const { word, language } = req.body;
+  if (!word) return res.status(400).json({ error: 'Word required' });
+  const prompt = `For the ${language || 'English'} word "${word}", return ONLY valid JSON (no markdown):
+{
+  "word": "${word}",
+  "language": "${language || 'English'}",
+  "part_of_speech": "noun/verb/adjective/etc",
+  "definition": "clear concise definition",
+  "example": "natural example sentence using the word",
+  "translation": "translation to English (if not already English, else leave blank)"
+}`;
+  const result = await callGemini(prompt);
+  if (result.error) return res.status(503).json({ error: result.error });
+  try {
+    let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const entry = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+    const { data, error } = await supabase().from('lang_vocab').insert({
+      user_id: req.user.id, ...entry,
+      ease_factor: 2.5, interval: 1,
+      next_review: new Date().toISOString(),
+      correct: 0, incorrect: 0,
+    }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: 'Failed to generate vocab: ' + e.message }); }
+});
+
+// Save vocab review result (spaced repetition)
+app.patch('/api/lang/vocab/:id/review', authMiddleware, async (req, res) => {
+  const { quality } = req.body; // 0=wrong, 3=hard, 4=good, 5=easy
+  try {
+    const { data: card } = await supabase().from('lang_vocab').select('*').eq('id', req.params.id).eq('user_id', req.user.id).single();
+    if (!card) return res.status(404).json({ error: 'Word not found' });
+    let ef = Math.max(1.3, card.ease_factor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    let interval = quality < 3 ? 1 : Math.round(card.interval === 1 ? 6 : card.interval * ef);
+    const nextReview = new Date(Date.now() + interval * 86400000).toISOString();
+    const correct = quality >= 3 ? card.correct + 1 : card.correct;
+    const incorrect = quality < 3 ? card.incorrect + 1 : card.incorrect;
+    const { data, error } = await supabase().from('lang_vocab').update({ ease_factor: ef, interval, next_review: nextReview, correct, incorrect }).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/lang/vocab/:id', authMiddleware, async (req, res) => {
+  try {
+    await supabase().from('lang_vocab').delete().eq('id', req.params.id).eq('user_id', req.user.id);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// AI generate adaptive quiz
+app.post('/api/lang/quiz', authMiddleware, async (req, res) => {
+  const { language, level = 'intermediate', weakWords = [] } = req.body;
+  const weakHint = weakWords.length ? `Focus on these words the student struggled with: ${weakWords.slice(0, 5).join(', ')}.` : '';
+  const prompt = `Generate 5 ${level} ${language || 'English'} language quiz questions. ${weakHint}
+Mix these types: multiple choice vocabulary, fill-in-the-blank, choose correct grammar form.
+Return ONLY valid JSON:
+{ "questions": [
+  { "id": 1, "type": "mcq", "question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "answer": "A", "explanation": "..." },
+  { "id": 2, "type": "fill", "question": "Fill in: ___ is the capital of France.", "answer": "Paris", "explanation": "..." }
+] }`;
+  const result = await callGemini(prompt);
+  if (result.error) return res.status(503).json({ error: result.error });
+  try {
+    let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    res.json(JSON.parse(text.match(/\{[\s\S]*\}/)[0]));
+  } catch { res.status(500).json({ error: 'Failed to generate quiz.' }); }
+});
+
+// AI grammar practice
+app.post('/api/lang/grammar', authMiddleware, async (req, res) => {
+  const { language, type = 'mixed' } = req.body; // type: mcq | fill | correct
+  const prompt = `Generate 5 ${language || 'English'} grammar exercises of type: ${type}.
+- mcq: multiple choice grammar question
+- fill: fill in the blank with correct form
+- correct: find and fix the error in the sentence
+Return ONLY valid JSON:
+{ "exercises": [
+  { "id": 1, "type": "mcq", "instruction": "Choose the correct form:", "sentence": "She ___ to school every day.", "options": ["A) go", "B) goes", "C) going", "D) gone"], "answer": "B", "explanation": "Third person singular uses 'goes'." },
+  { "id": 2, "type": "correct", "instruction": "Find and fix the error:", "sentence": "He don't like coffee.", "answer": "He doesn't like coffee.", "explanation": "Use 'doesn't' for third person singular." }
+] }`;
+  const result = await callGemini(prompt);
+  if (result.error) return res.status(503).json({ error: result.error });
+  try {
+    let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    res.json(JSON.parse(text.match(/\{[\s\S]*\}/)[0]));
+  } catch { res.status(500).json({ error: 'Failed to generate grammar exercises.' }); }
+});
+
+// AI writing feedback
+app.post('/api/lang/writing', authMiddleware, async (req, res) => {
+  const { language, prompt: userPrompt, text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Text required' });
+  const aiPrompt = `You are a ${language || 'English'} language teacher. A student wrote the following in response to: "${userPrompt || 'Free writing'}".
+
+Student's text:
+"${text}"
+
+Give detailed constructive feedback. Return ONLY valid JSON:
+{
+  "score": 75,
+  "summary": "Overall assessment in 1-2 sentences",
+  "corrections": [
+    { "original": "incorrect phrase", "corrected": "correct phrase", "explanation": "why" }
+  ],
+  "strengths": ["strength 1", "strength 2"],
+  "improvements": ["suggestion 1", "suggestion 2"],
+  "corrected_text": "The fully corrected version of their text"
+}`;
+  const result = await callGemini(aiPrompt);
+  if (result.error) return res.status(503).json({ error: result.error });
+  try {
+    let text2 = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    res.json(JSON.parse(text2.match(/\{[\s\S]*\}/)[0]));
+  } catch { res.status(500).json({ error: 'Failed to get feedback.' }); }
+});
+
+// GET language progress stats
+app.get('/api/lang/progress', authMiddleware, async (req, res) => {
+  try {
+    const { data: vocab } = await supabase().from('lang_vocab').select('*').eq('user_id', req.user.id);
+    const total = vocab?.length || 0;
+    const mastered = vocab?.filter(v => v.correct >= 3 && v.incorrect === 0).length || 0;
+    const learning = vocab?.filter(v => v.correct > 0 || v.incorrect > 0).length || 0;
+    const dueNow = vocab?.filter(v => new Date(v.next_review) <= new Date()).length || 0;
+    const totalCorrect = vocab?.reduce((a, v) => a + v.correct, 0) || 0;
+    const totalIncorrect = vocab?.reduce((a, v) => a + v.incorrect, 0) || 0;
+    res.json({ total, mastered, learning, dueNow, totalCorrect, totalIncorrect });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ==================== FEEDBACK ====================
 
 app.post('/api/feedback', authMiddleware, async (req, res) => {

@@ -13,6 +13,7 @@ const nav = [
   { to: '/notes',     icon: '📓', label: 'Notes' },
   { to: '/grades',    icon: '📈', label: 'Grade Tracker' },
   { to: '/comments',  icon: '💬', label: 'Comments' },
+  { to: '/language',  icon: '🌐', label: 'Language' },
   { to: '/settings',  icon: '⚙️', label: 'Settings' },
   { to: '/chat',      icon: '💬', label: 'Chat Rooms' },
 ]

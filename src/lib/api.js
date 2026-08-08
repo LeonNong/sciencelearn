@@ -82,7 +82,15 @@ export const api = {
   scanComments: (image, mimeType) => post('/grades/scan-comments', { image, mimeType }),
   addGrade: (d) => post('/grades', d),
   deleteGrade: (id) => del(`/grades/${id}`),
-  // Rooms
+  // Language Learning
+  getLangVocab: () => req('/lang/vocab'),
+  generateVocab: (d) => post('/lang/vocab/generate', d, 30000),
+  reviewVocab: (id, quality) => req(`/lang/vocab/${id}/review`, { method: 'PATCH', body: JSON.stringify({ quality }) }),
+  deleteVocab: (id) => del(`/lang/vocab/${id}`),
+  langQuiz: (d) => post('/lang/quiz', d, 60000),
+  langGrammar: (d) => post('/lang/grammar', d, 60000),
+  langWriting: (d) => post('/lang/writing', d, 60000),
+  langProgress: () => req('/lang/progress'),
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),
   deleteRoom: (id) => del(`/rooms/${id}`),
