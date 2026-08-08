@@ -3,12 +3,12 @@ import { api } from '../lib/api'
 
 const LANGUAGES = ['English', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'German', 'Mandarin', 'Portuguese']
 const TABS = [
-  { key: 'vocab',    label: '📖 Vocabulary' },
-  { key: 'review',   label: '🔁 Review' },
-  { key: 'quiz',     label: '🧪 Quiz' },
-  { key: 'grammar',  label: '✏️ Grammar' },
-  { key: 'writing',  label: '✍️ Writing' },
-  { key: 'progress', label: '📊 Progress' },
+  { key: 'vocab',    label: 'Vocabulary' },
+  { key: 'review',   label: 'Review' },
+  { key: 'quiz',     label: 'Quiz' },
+  { key: 'grammar',  label: 'Grammar' },
+  { key: 'writing',  label: 'Writing' },
+  { key: 'progress', label: 'Progress' },
 ]
 
 export default function Language() {
@@ -18,13 +18,12 @@ export default function Language() {
   return (
     <div className="max-w-4xl mx-auto space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold" style={{ color: '#e2e8f0' }}>🌐 Language Learning</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#e2e8f0' }}>Language Learning</h1>
         <select className="input w-auto py-1 text-sm" value={lang} onChange={e => setLang(e.target.value)}>
           {LANGUAGES.map(l => <option key={l}>{l}</option>)}
         </select>
       </div>
 
-      {/* Tabs */}
       <div className="flex flex-wrap gap-1" style={{ borderBottom: '2px solid #3b82f6' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
@@ -40,7 +39,7 @@ export default function Language() {
       </div>
 
       {tab === 'vocab'    && <VocabTab lang={lang} />}
-      {tab === 'review'   && <ReviewTab lang={lang} />}
+      {tab === 'review'   && <ReviewTab />}
       {tab === 'quiz'     && <QuizTab lang={lang} />}
       {tab === 'grammar'  && <GrammarTab lang={lang} />}
       {tab === 'writing'  && <WritingTab lang={lang} />}
@@ -49,7 +48,6 @@ export default function Language() {
   )
 }
 
-// ── Vocabulary Tab ──────────────────────────────────────────────
 function VocabTab({ lang }) {
   const [vocab, setVocab] = useState([])
   const [word, setWord] = useState('')
@@ -94,25 +92,27 @@ function VocabTab({ lang }) {
                 <span className="text-xs text-gray-500 ml-2 italic">{v.part_of_speech}</span>
                 {v.translation && <span className="text-xs text-primary-400 ml-2">({v.translation})</span>}
               </div>
-              <button onClick={() => remove(v.id)} className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 text-xs transition">�?/button>
+              <button onClick={() => remove(v.id)}
+                className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-500 text-xs transition">X</button>
             </div>
             <p className="text-gray-300 text-xs">{v.definition}</p>
             <p className="text-gray-500 text-xs italic">"{v.example}"</p>
-            <div className="flex gap-2 text-xs">
-              <span className="text-green-400">�?{v.correct}</span>
-              <span className="text-red-400">�?{v.incorrect}</span>
+            <div className="flex gap-3 text-xs">
+              <span className="text-green-400">correct: {v.correct}</span>
+              <span className="text-red-400">wrong: {v.incorrect}</span>
             </div>
           </div>
         ))}
         {vocab.length === 0 && !loading && (
-          <p className="col-span-2 text-center py-8 text-xs" style={{ color: '#6b7280' }}>No words yet. Add your first word above.</p>
+          <p className="col-span-2 text-center py-8 text-xs" style={{ color: '#6b7280' }}>
+            No words yet. Add your first word above.
+          </p>
         )}
       </div>
     </div>
   )
 }
 
-// ── Spaced Repetition Review Tab ────────────────────────────────
 function ReviewTab() {
   const [due, setDue] = useState([])
   const [idx, setIdx] = useState(0)
@@ -121,8 +121,7 @@ function ReviewTab() {
 
   useEffect(() => {
     api.getLangVocab().then(vocab => {
-      const now = new Date()
-      setDue(vocab.filter(v => new Date(v.next_review) <= now))
+      setDue(vocab.filter(v => new Date(v.next_review) <= new Date()))
     }).catch(() => {})
   }, [])
 
@@ -136,15 +135,16 @@ function ReviewTab() {
   if (due.length === 0) return (
     <div className="card text-center py-12">
       <p className="text-4xl mb-3">🎉</p>
-      <p className="text-white text-sm">No words due for review. Come back later!</p>
+      <p className="text-white text-sm">No words due for review!</p>
     </div>
   )
 
   if (done) return (
     <div className="card text-center py-12">
-      <p className="text-4xl mb-3">�?/p>
+      <p className="text-4xl mb-3">✅</p>
       <p className="text-white text-sm font-bold">Session complete!</p>
-      <button onClick={() => { setIdx(0); setFlipped(false); setDone(false) }} className="btn-primary mt-4 px-6">Review Again</button>
+      <button onClick={() => { setIdx(0); setFlipped(false); setDone(false) }}
+        className="btn-primary mt-4 px-6">Review Again</button>
     </div>
   )
 
@@ -178,7 +178,6 @@ function ReviewTab() {
   )
 }
 
-// ── Adaptive Quiz Tab ───────────────────────────────────────────
 function QuizTab({ lang }) {
   const [level, setLevel] = useState('intermediate')
   const [questions, setQuestions] = useState([])
@@ -222,8 +221,16 @@ function QuizTab({ lang }) {
       {results.map((r, i) => (
         <div key={r.id} className={`card border-l-4 ${r.correct ? 'border-green-500' : 'border-red-500'}`}>
           <p className="text-white text-xs font-bold mb-1">Q{i+1}. {r.question}</p>
-          <p className="text-xs"><span className="text-gray-500">Your answer: </span><span className={r.correct ? 'text-green-400' : 'text-red-400'}>{r.userAnswer || '(blank)'}</span></p>
-          {!r.correct && <p className="text-xs"><span className="text-gray-500">Correct: </span><span className="text-green-400">{r.answer}</span></p>}
+          <p className="text-xs">
+            <span className="text-gray-500">Your answer: </span>
+            <span className={r.correct ? 'text-green-400' : 'text-red-400'}>{r.userAnswer || '(blank)'}</span>
+          </p>
+          {!r.correct && (
+            <p className="text-xs">
+              <span className="text-gray-500">Correct: </span>
+              <span className="text-green-400">{r.answer}</span>
+            </p>
+          )}
           <p className="text-xs text-gray-500 mt-1 italic">{r.explanation}</p>
         </div>
       ))}
@@ -242,7 +249,9 @@ function QuizTab({ lang }) {
         </select>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
-      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : '�?Generate Quiz'}</button>
+      <button onClick={generate} disabled={loading} className="btn-primary w-full">
+        {loading ? 'Generating...' : 'Generate Quiz'}
+      </button>
     </div>
   )
 
@@ -265,17 +274,16 @@ function QuizTab({ lang }) {
               })}
             </div>
           ) : (
-            <input className="input text-xs" placeholder="Your answer..." value={answers[q.id] || ''}
-              onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))} />
+            <input className="input text-xs" placeholder="Your answer..."
+              value={answers[q.id] || ''} onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))} />
           )}
         </div>
       ))}
-      <button onClick={submit} className="btn-primary w-full">�?Submit</button>
+      <button onClick={submit} className="btn-primary w-full">Submit Answers</button>
     </div>
   )
 }
 
-// ── Grammar Tab ─────────────────────────────────────────────────
 function GrammarTab({ lang }) {
   const [type, setType] = useState('mixed')
   const [exercises, setExercises] = useState([])
@@ -313,8 +321,16 @@ function GrammarTab({ lang }) {
         <div key={r.id} className={`card border-l-4 ${r.correct ? 'border-green-500' : 'border-red-500'}`}>
           <p className="text-gray-400 text-xs mb-1">{r.instruction}</p>
           <p className="text-white text-xs font-medium mb-2">"{r.sentence}"</p>
-          <p className="text-xs"><span className="text-gray-500">Your answer: </span><span className={r.correct ? 'text-green-400' : 'text-red-400'}>{r.userAnswer || '(blank)'}</span></p>
-          {!r.correct && <p className="text-xs"><span className="text-gray-500">Correct: </span><span className="text-green-400">{r.answer}</span></p>}
+          <p className="text-xs">
+            <span className="text-gray-500">Your answer: </span>
+            <span className={r.correct ? 'text-green-400' : 'text-red-400'}>{r.userAnswer || '(blank)'}</span>
+          </p>
+          {!r.correct && (
+            <p className="text-xs">
+              <span className="text-gray-500">Correct: </span>
+              <span className="text-green-400">{r.answer}</span>
+            </p>
+          )}
           <p className="text-xs text-gray-500 mt-1 italic">{r.explanation}</p>
         </div>
       ))}
@@ -332,7 +348,9 @@ function GrammarTab({ lang }) {
         </select>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
-      <button onClick={generate} disabled={loading} className="btn-primary w-full">{loading ? 'Generating...' : '�?Generate Exercises'}</button>
+      <button onClick={generate} disabled={loading} className="btn-primary w-full">
+        {loading ? 'Generating...' : 'Generate Exercises'}
+      </button>
     </div>
   )
 
@@ -356,17 +374,16 @@ function GrammarTab({ lang }) {
               })}
             </div>
           ) : (
-            <input className="input text-xs" placeholder="Your answer..." value={answers[q.id] || ''}
-              onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))} />
+            <input className="input text-xs" placeholder="Your answer..."
+              value={answers[q.id] || ''} onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))} />
           )}
         </div>
       ))}
-      <button onClick={submit} className="btn-primary w-full">�?Submit</button>
+      <button onClick={submit} className="btn-primary w-full">Submit</button>
     </div>
   )
 }
 
-// ── Writing Tab ─────────────────────────────────────────────────
 function WritingTab({ lang }) {
   const [prompt, setPrompt] = useState('')
   const [text, setText] = useState('')
@@ -404,7 +421,8 @@ function WritingTab({ lang }) {
             </button>
           ))}
         </div>
-        <input className="input text-xs" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Or type your own prompt..." />
+        <input className="input text-xs" value={prompt} onChange={e => setPrompt(e.target.value)}
+          placeholder="Or type your own prompt..." />
       </div>
       <div>
         <label className="label">Your Writing ({text.length} chars)</label>
@@ -413,7 +431,7 @@ function WritingTab({ lang }) {
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
       <button onClick={getFeedback} disabled={loading || !text.trim()} className="btn-primary w-full">
-        {loading ? '🤖 Analysing...' : '�?Get AI Feedback'}
+        {loading ? 'Analysing...' : 'Get AI Feedback'}
       </button>
 
       {feedback && (
@@ -426,11 +444,11 @@ function WritingTab({ lang }) {
           </div>
           {feedback.corrections?.length > 0 && (
             <div className="card">
-              <h3 className="text-white text-xs font-bold mb-2">📝 Corrections</h3>
+              <h3 className="text-white text-xs font-bold mb-2">Corrections</h3>
               {feedback.corrections.map((c, i) => (
                 <div key={i} className="mb-2 text-xs">
                   <span className="text-red-400 line-through">{c.original}</span>
-                  <span className="text-gray-500 mx-1">�?/span>
+                  <span className="text-gray-500 mx-1"> → </span>
                   <span className="text-green-400">{c.corrected}</span>
                   <span className="text-gray-500 ml-2">({c.explanation})</span>
                 </div>
@@ -440,20 +458,20 @@ function WritingTab({ lang }) {
           <div className="grid sm:grid-cols-2 gap-3">
             {feedback.strengths?.length > 0 && (
               <div className="card">
-                <h3 className="text-green-400 text-xs font-bold mb-2">💪 Strengths</h3>
-                {feedback.strengths.map((s, i) => <p key={i} className="text-gray-300 text-xs">�?{s}</p>)}
+                <h3 className="text-green-400 text-xs font-bold mb-2">Strengths</h3>
+                {feedback.strengths.map((s, i) => <p key={i} className="text-gray-300 text-xs">- {s}</p>)}
               </div>
             )}
             {feedback.improvements?.length > 0 && (
               <div className="card">
-                <h3 className="text-yellow-400 text-xs font-bold mb-2">🎯 Improve</h3>
-                {feedback.improvements.map((s, i) => <p key={i} className="text-gray-300 text-xs">�?{s}</p>)}
+                <h3 className="text-yellow-400 text-xs font-bold mb-2">Improve</h3>
+                {feedback.improvements.map((s, i) => <p key={i} className="text-gray-300 text-xs">- {s}</p>)}
               </div>
             )}
           </div>
           {feedback.corrected_text && (
             <div className="card">
-              <h3 className="text-primary-400 text-xs font-bold mb-2">�?Corrected Version</h3>
+              <h3 className="text-primary-400 text-xs font-bold mb-2">Corrected Version</h3>
               <p className="text-gray-300 text-xs leading-relaxed">{feedback.corrected_text}</p>
             </div>
           )}
@@ -463,7 +481,6 @@ function WritingTab({ lang }) {
   )
 }
 
-// ── Progress Tab ─────────────────────────────────────────────────
 function ProgressTab() {
   const [stats, setStats] = useState(null)
   const [vocab, setVocab] = useState([])
@@ -479,37 +496,33 @@ function ProgressTab() {
     ? Math.round((stats.totalCorrect / (stats.totalCorrect + stats.totalIncorrect)) * 100)
     : 0
 
-  // Group vocab by mastery level
   const mastered  = vocab.filter(v => v.correct >= 3 && v.incorrect === 0)
   const learning  = vocab.filter(v => (v.correct > 0 || v.incorrect > 0) && !(v.correct >= 3 && v.incorrect === 0))
   const struggling = vocab.filter(v => v.incorrect > v.correct)
 
   return (
     <div className="space-y-4">
-      {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Words',  val: stats.total,    color: '#3b82f6', emoji: '📚' },
-          { label: 'Mastered',     val: stats.mastered, color: '#10b981', emoji: '🏆' },
-          { label: 'Due Today',    val: stats.dueNow,   color: '#f59e0b', emoji: '🔁' },
-          { label: 'Accuracy',     val: accuracy + '%', color: '#8b5cf6', emoji: '🎯' },
+          { label: 'Total Words', val: stats.total,    color: '#3b82f6' },
+          { label: 'Mastered',    val: stats.mastered, color: '#10b981' },
+          { label: 'Due Today',   val: stats.dueNow,   color: '#f59e0b' },
+          { label: 'Accuracy',    val: accuracy + '%', color: '#8b5cf6' },
         ].map(s => (
           <div key={s.label} className="card text-center">
-            <p className="text-2xl">{s.emoji}</p>
             <p className="text-2xl font-bold mt-1" style={{ color: s.color }}>{s.val}</p>
             <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Mastery breakdown */}
       <div className="card">
         <h3 className="text-white font-bold text-xs mb-3">Word Mastery</h3>
         <div className="space-y-2">
           {[
-            { label: '🏆 Mastered',   words: mastered,   color: '#10b981' },
-            { label: '📖 Learning',   words: learning,   color: '#3b82f6' },
-            { label: '⚠️ Struggling', words: struggling, color: '#ef4444' },
+            { label: 'Mastered',   words: mastered,   color: '#10b981' },
+            { label: 'Learning',   words: learning,   color: '#3b82f6' },
+            { label: 'Struggling', words: struggling, color: '#ef4444' },
           ].map(g => (
             <div key={g.label}>
               <div className="flex justify-between text-xs mb-1">
@@ -517,7 +530,7 @@ function ProgressTab() {
                 <span style={{ color: g.color }}>{g.words.length} words</span>
               </div>
               <div className="w-full bg-gray-800 h-1.5">
-                <div className="h-1.5 transition-all" style={{
+                <div className="h-1.5" style={{
                   width: stats.total ? `${(g.words.length / stats.total) * 100}%` : '0%',
                   background: g.color
                 }} />
@@ -527,14 +540,13 @@ function ProgressTab() {
         </div>
       </div>
 
-      {/* Struggling words list */}
       {struggling.length > 0 && (
         <div className="card">
-          <h3 className="text-red-400 font-bold text-xs mb-3">⚠️ Words to Focus On</h3>
+          <h3 className="text-red-400 font-bold text-xs mb-3">Words to Focus On</h3>
           <div className="flex flex-wrap gap-2">
             {struggling.map(v => (
               <span key={v.id} className="text-xs px-2 py-1 border border-red-800 text-red-400">
-                {v.word} ({v.incorrect}�?
+                {v.word} ({v.incorrect} wrong)
               </span>
             ))}
           </div>
@@ -543,4 +555,3 @@ function ProgressTab() {
     </div>
   )
 }
-
