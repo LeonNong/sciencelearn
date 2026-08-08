@@ -33,6 +33,61 @@ function gradeSymbol(score) {
   return { label: 'Below Pass', color: '#ef4444', emoji: '💪' }
 }
 
+// Parse a downloaded ADAM markbook HTML file and extract all assessments.
+function parseAdamHtml(htmlText) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(htmlText, 'text/html')
+  const results = []
+
+  // Each subject section has an h3.subjectname
+  const sections = doc.querySelectorAll('.section')
+  sections.forEach(section => {
+    const h3 = section.querySelector('h3.subjectname')
+    if (!h3) return
+
+    // Extract subject name — strip the percentage at the end e.g. "ENGLISH HL  59%"
+    const rawSubject = h3.textContent.trim().replace(/\s+\d+%$/, '').trim()
+    // Normalise to title case and map known variants
+    const subjectMap = {
+      'ENGLISH HL': 'English HL', 'ENGLISH': 'English',
+      'AFRIKAANS FAL': 'Afrikaans FAL', 'AFRIKAANS': 'Afrikaans',
+      'MATHEMATICS': 'Mathematics', 'MATHEMATICAL LITERACY': 'Mathematical Literacy',
+      'LIFE SCIENCES': 'Biology', 'PHYSICAL SCIENCES': 'Physics',
+      'LIFE ORIENTATION': 'Life Orientation', 'INFORMATION TECHNOLOGY': 'Information Technology',
+      'ISIZULU': 'isiZulu', 'CHEMISTRY': 'Chemistry',
+    }
+    const subject = subjectMap[rawSubject] || rawSubject.charAt(0) + rawSubject.slice(1).toLowerCase()
+
+    // Each assessment row has .assessment-description, .assessment-percent, .assessment-comment
+    const rows = section.querySelectorAll('tr')
+    rows.forEach(row => {
+      const descEl = row.querySelector('.assessment-description')
+      const pctEl = row.querySelector('.assessment-percent')
+      if (!descEl || !pctEl) return
+
+      const descText = descEl.textContent.trim() // e.g. "Unprepared Reading (11 May)"
+      const pct = parseInt(pctEl.textContent.trim())
+      if (isNaN(pct)) return
+
+      // Extract date from parentheses e.g. "(11 May)" → try to build YYYY-MM-DD
+      const dateMatch = descText.match(/\((\d{1,2}\s+\w+(?:\s+\d{4})?)\)$/)
+      let date = new Date().toISOString().split('T')[0]
+      if (dateMatch) {
+        const parsed = new Date(dateMatch[1] + (dateMatch[1].match(/\d{4}$/) ? '' : ' 2025'))
+        if (!isNaN(parsed)) date = parsed.toISOString().split('T')[0]
+      }
+
+      const label = descText.replace(/\s*\(.*\)$/, '').trim()
+      const commentEl = row.querySelector('.assessment-comment')
+      const comment = commentEl ? commentEl.textContent.trim() : null
+
+      results.push({ subject, label, score: pct, date, comment })
+    })
+  })
+
+  return results
+}
+
 // AI 扫描结果确认弹窗：展示模型识别出的成绩列表，允许用户在保存前修改或删除。
 function ScanModal({ extracted, onConfirm, onClose }) {
   const [items, setItems] = useState(extracted)
@@ -96,6 +151,21 @@ export default function Grades() {
   const fileRef = useRef()
   const cameraRef = useRef()
   const pdfRef = useRef()
+  const adamRef = useRef()
+
+  // Handle ADAM HTML file import
+  async function handleAdamImport(file) {
+    if (!file) return
+    setError('')
+    try {
+      const text = await file.text()
+      const extracted = parseAdamHtml(text)
+      if (extracted.length === 0) return setError('No grades found in this file. Make sure it\'s an ADAM markbook page.')
+      setScanModal(extracted)
+    } catch (err) {
+      setError('Failed to parse ADAM file: ' + err.message)
+    }
+  }
 
   // 将 PDF 的所有页面渲染成一张长图的 base64，用于发给 AI 扫描。
   async function pdfToBase64(file) {
@@ -356,6 +426,16 @@ export default function Grades() {
               <img src={scanPreview} alt="preview" className="mt-2 w-full rounded-lg object-cover max-h-32" />
             )}
           </div>
+
+          {/* ADAM HTML import */}
+          <input ref={adamRef} type="file" accept=".html,.htm"
+            className="hidden" onChange={e => handleAdamImport(e.target.files[0])} />
+          <button
+            onClick={() => adamRef.current.click()}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-dashed border-yellow-500 text-yellow-400 hover:bg-yellow-900/20 transition text-sm font-medium"
+          >
+            🏫 Import from ADAM (HTML)
+          </button>
 
           <div className="flex items-center gap-2 text-xs text-gray-400">
             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600" />
