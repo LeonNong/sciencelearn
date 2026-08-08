@@ -85,6 +85,12 @@ body {
   border-radius: 0 !important;
 }
 
+/* Force light text — this app is dark-theme only, gray-900 text is invisible */
+.text-gray-900 { color: #e2e8f0 !important; }
+.text-gray-800 { color: #cbd5e1 !important; }
+.text-gray-700 { color: #94a3b8 !important; }
+.text-gray-600 { color: #64748b !important; }
+
 /* Pixel cursor blink */
 @keyframes pixel-blink {
   0%, 100% { opacity: 1; }
