@@ -85,6 +85,7 @@ export const api = {
   // Language Learning
   getLangVocab: () => req('/lang/vocab'),
   generateVocab: (d) => post('/lang/vocab/generate', d, 30000),
+  refreshVocab: (id) => post(`/lang/vocab/${id}/refresh`, {}, 30000),
   reviewVocab: (id, quality) => req(`/lang/vocab/${id}/review`, { method: 'PATCH', body: JSON.stringify({ quality }) }),
   deleteVocab: (id) => del(`/lang/vocab/${id}`),
   langQuiz: (d) => post('/lang/quiz', d, 60000),

@@ -733,22 +733,37 @@ app.get('/api/lang/vocab', authMiddleware, async (req, res) => {
 app.post('/api/lang/vocab/generate', authMiddleware, async (req, res) => {
   const { word, language } = req.body;
   if (!word) return res.status(400).json({ error: 'Word required' });
+  const isAfrikaans = (language || '').toLowerCase() === 'afrikaans';
   const prompt = `For the ${language || 'English'} word "${word}", return ONLY valid JSON (no markdown):
 {
   "word": "${word}",
   "language": "${language || 'English'}",
-  "part_of_speech": "noun/verb/adjective/etc",
-  "definition": "clear concise definition",
-  "example": "natural example sentence using the word",
+  "meanings": [
+    {
+      "part_of_speech": "noun/verb/adjective/adverb/etc${isAfrikaans ? ' (for Afrikaans verbs use: verb (v1) for infinitive form, verb (v2) for conjugated form)' : ''}",
+      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc",
+      "definition": "clear concise definition for this meaning",
+      "example": "natural example sentence using the word in this meaning"
+    }
+  ],
   "translation": "translation to English (if not already English, else leave blank)"
-}`;
+}
+Include ALL common meanings. For Afrikaans verbs, always include both v1 (infinitive e.g. loop) and v2 (conjugated e.g. geloop) as separate meanings if applicable.`;
   const result = await callGemini(prompt);
   if (result.error) return res.status(503).json({ error: result.error });
   try {
     let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const entry = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+    // Flatten for DB: store first meaning in legacy fields, store all meanings as JSON
+    const firstMeaning = entry.meanings?.[0] || {}
     const { data, error } = await supabase().from('lang_vocab').insert({
-      user_id: req.user.id, ...entry,
+      user_id: req.user.id,
+      word: entry.word,
+      language: entry.language,
+      part_of_speech: firstMeaning.part_of_speech || '',
+      definition: JSON.stringify(entry.meanings || []),  // store all meanings as JSON
+      example: firstMeaning.example || '',
+      translation: entry.translation || '',
       ease_factor: 2.5, interval: 1,
       next_review: new Date().toISOString(),
       correct: 0, incorrect: 0,
@@ -756,6 +771,43 @@ app.post('/api/lang/vocab/generate', authMiddleware, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (e) { res.status(500).json({ error: 'Failed to generate vocab: ' + e.message }); }
+});
+
+// Verify/refresh a vocab entry — re-generate with AI
+app.post('/api/lang/vocab/:id/refresh', authMiddleware, async (req, res) => {
+  try {
+    const { data: card } = await supabase().from('lang_vocab').select('*').eq('id', req.params.id).eq('user_id', req.user.id).single();
+    if (!card) return res.status(404).json({ error: 'Word not found' });
+    const isAfrikaans = (card.language || '').toLowerCase() === 'afrikaans';
+    const prompt = `For the ${card.language} word "${card.word}", return ONLY valid JSON (no markdown):
+{
+  "word": "${card.word}",
+  "language": "${card.language}",
+  "meanings": [
+    {
+      "part_of_speech": "noun/verb/adjective/etc${isAfrikaans ? ' (use verb (v1) for infinitive, verb (v2) for conjugated)' : ''}",
+      "pos_abbr": "n./v./adj./adv./v1./v2./prep./conj./etc",
+      "definition": "clear concise definition",
+      "example": "natural example sentence"
+    }
+  ],
+  "translation": "English translation or blank"
+}
+Include ALL common meanings. For Afrikaans verbs include both v1 and v2 if applicable.`;
+    const result = await callGemini(prompt);
+    if (result.error) return res.status(503).json({ error: result.error });
+    let text = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const entry = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+    const firstMeaning = entry.meanings?.[0] || {};
+    const { data, error } = await supabase().from('lang_vocab').update({
+      part_of_speech: firstMeaning.part_of_speech || '',
+      definition: JSON.stringify(entry.meanings || []),
+      example: firstMeaning.example || '',
+      translation: entry.translation || '',
+    }).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: 'Failed to refresh: ' + e.message }); }
 });
 
 // Save vocab review result (spaced repetition)
