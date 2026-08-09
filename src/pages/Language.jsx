@@ -65,6 +65,8 @@ function VocabTab({ lang }) {
   const [error, setError] = useState('')
   const [flipped, setFlipped] = useState({})
   const [refreshing, setRefreshing] = useState({})
+  const [refreshingAll, setRefreshingAll] = useState(false)
+  const [refreshProgress, setRefreshProgress] = useState(0)
 
   useEffect(() => { api.getLangVocab().then(setVocab).catch(() => {}) }, [])
 
@@ -95,6 +97,21 @@ function VocabTab({ lang }) {
     finally { setRefreshing(r => ({ ...r, [id]: false })) }
   }
 
+  async function refreshAll() {
+    setRefreshingAll(true)
+    setRefreshProgress(0)
+    setError('')
+    for (let i = 0; i < vocab.length; i++) {
+      try {
+        const updated = await api.refreshVocab(vocab[i].id)
+        setVocab(v => v.map(x => x.id === vocab[i].id ? updated : x))
+        setFlipped(f => ({ ...f, [vocab[i].id]: false }))
+      } catch {}
+      setRefreshProgress(i + 1)
+    }
+    setRefreshingAll(false)
+  }
+
   function flip(id) { setFlipped(f => ({ ...f, [id]: !f[id] })) }
 
   return (
@@ -105,6 +122,12 @@ function VocabTab({ lang }) {
         <button type="submit" disabled={loading} className="btn-primary px-4">
           {loading ? '...' : '+ Add'}
         </button>
+        {vocab.length > 0 && (
+          <button type="button" onClick={refreshAll} disabled={refreshingAll}
+            className="btn-secondary px-3 text-xs" title="Refresh all with AI">
+            {refreshingAll ? `${refreshProgress}/${vocab.length}` : 'AI All'}
+          </button>
+        )}
       </form>
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
@@ -140,9 +163,6 @@ function VocabTab({ lang }) {
                       </button>
                     </div>
                   </div>
-                  {v.translation && v.translation.trim() && (
-                    <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>{v.translation}</p>
-                  )}
                   <div className="mt-auto pt-3 flex items-center justify-between">
                     <div className="flex gap-2 text-xs">
                       <span style={{ color: '#10b981' }}>{v.correct}✓</span>
