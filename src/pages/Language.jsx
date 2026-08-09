@@ -124,7 +124,6 @@ function VocabTab({ lang }) {
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="text-white font-bold text-base">{v.word}</span>
-                      {/* Show all pos abbreviations */}
                       <span className="ml-2 text-xs" style={{ color: '#60a5fa' }}>
                         {meanings.map(m => m.pos_abbr).filter(Boolean).join(' / ')}
                       </span>
@@ -141,13 +140,15 @@ function VocabTab({ lang }) {
                       </button>
                     </div>
                   </div>
-                  {v.translation && <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>({v.translation})</p>}
+                  {v.translation && v.translation.trim() && (
+                    <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>{v.translation}</p>
+                  )}
                   <div className="mt-auto pt-3 flex items-center justify-between">
                     <div className="flex gap-2 text-xs">
-                      <span style={{ color: '#10b981' }}>{v.correct} correct</span>
-                      <span style={{ color: '#ef4444' }}>{v.incorrect} wrong</span>
+                      <span style={{ color: '#10b981' }}>{v.correct}✓</span>
+                      <span style={{ color: '#ef4444' }}>{v.incorrect}✗</span>
                     </div>
-                    <span className="text-xs" style={{ color: '#4b5563' }}>tap to flip</span>
+                    <span className="text-xs" style={{ color: '#374151' }}>flip →</span>
                   </div>
                 </div>
               ) : (
