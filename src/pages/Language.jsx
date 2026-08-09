@@ -154,6 +154,11 @@ function VocabTab({ lang }) {
               ) : (
                 /* Card back — show all meanings */
                 <div className="flex-1 overflow-y-auto space-y-3">
+                  {v.translation && v.translation.trim() && (
+                    <p className="text-xs pb-2 border-b border-gray-700" style={{ color: '#94a3b8' }}>
+                      {v.translation}
+                    </p>
+                  )}
                   {meanings.map((m, i) => (
                     <div key={i} className={i > 0 ? 'pt-2 border-t border-gray-700' : ''}>
                       {m.pos_abbr && (
