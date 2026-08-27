@@ -597,11 +597,24 @@ function WritingTab({ lang }) {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [added, setAdded] = useState({}) // track which words were added to vocab
+  const [added, setAdded] = useState({})
+  const [existingVocab, setExistingVocab] = useState([])
+  const [addingAll, setAddingAll] = useState(false)
+
+  // Load existing vocab to check duplicates
+  useEffect(() => {
+    api.getLangVocab().then(setExistingVocab).catch(() => {})
+  }, [])
+
+  function isInVocab(translation) {
+    return existingVocab.some(v =>
+      v.word.toLowerCase() === translation.toLowerCase() && v.language === lang
+    )
+  }
 
   async function analyse() {
     if (!text.trim()) return
-    setLoading(true); setError(''); setResult(null)
+    setLoading(true); setError(''); setResult(null); setAdded({})
     try {
       const res = await api.langWriting({ language: lang, nativeLanguage: nativeLang, prompt, text })
       setResult(res)
@@ -610,10 +623,26 @@ function WritingTab({ lang }) {
   }
 
   async function addToVocab(word) {
+    if (isInVocab(word.translation) || added[word.original]) return
     try {
-      await api.generateVocab({ word: word.translation, language: lang })
+      const entry = await api.generateVocab({ word: word.translation, language: lang })
       setAdded(a => ({ ...a, [word.original]: true }))
+      setExistingVocab(v => [...v, entry])
     } catch (err) { setError('Failed to add: ' + err.message) }
+  }
+
+  async function addAllToVocab() {
+    if (!result?.native_words?.length) return
+    setAddingAll(true)
+    const toAdd = result.native_words.filter(w => !isInVocab(w.translation) && !added[w.original])
+    for (const w of toAdd) {
+      try {
+        const entry = await api.generateVocab({ word: w.translation, language: lang })
+        setAdded(a => ({ ...a, [w.original]: true }))
+        setExistingVocab(v => [...v, entry])
+      } catch {}
+    }
+    setAddingAll(false)
   }
 
   // Highlight native words in the original text
@@ -697,24 +726,41 @@ function WritingTab({ lang }) {
           {/* Native words → vocab */}
           {result.native_words?.length > 0 && (
             <div className="card space-y-3">
-              <p className="text-yellow-400 text-xs font-bold">{result.native_words.length} word{result.native_words.length !== 1 ? 's' : ''} to learn:</p>
-              {result.native_words.map((w, i) => (
-                <div key={i} className="flex items-start gap-3 p-2 border border-gray-700">
-                  <div className="flex-1">
-                    <span className="text-yellow-300 text-xs font-bold">{w.original}</span>
-                    <span className="text-gray-500 text-xs mx-2">→</span>
-                    <span className="text-green-400 text-xs font-bold">{w.translation}</span>
-                    <p className="text-gray-400 text-xs mt-0.5">{w.definition}</p>
-                    {w.example && <p className="text-gray-600 text-xs italic">"{w.example}"</p>}
-                  </div>
-                  <button
-                    onClick={() => addToVocab(w)}
-                    disabled={added[w.original]}
-                    className={`text-xs px-2 py-1 shrink-0 transition ${added[w.original] ? 'text-green-500 border border-green-800' : 'btn-primary'}`}>
-                    {added[w.original] ? 'Added' : '+ Vocab'}
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 text-xs font-bold">
+                  {result.native_words.length} word{result.native_words.length !== 1 ? 's' : ''} to learn:
+                </p>
+                {result.native_words.some(w => !isInVocab(w.translation) && !added[w.original]) && (
+                  <button onClick={addAllToVocab} disabled={addingAll}
+                    className="btn-primary text-xs px-3 py-1">
+                    {addingAll ? 'Adding...' : '+ Add All'}
                   </button>
-                </div>
-              ))}
+                )}
+              </div>
+              {result.native_words.map((w, i) => {
+                const alreadyHas = isInVocab(w.translation)
+                const justAdded = added[w.original]
+                return (
+                  <div key={i} className="flex items-start gap-3 p-2 border border-gray-700">
+                    <div className="flex-1">
+                      <span className="text-yellow-300 text-xs font-bold">{w.original}</span>
+                      <span className="text-gray-500 text-xs mx-2">→</span>
+                      <span className="text-green-400 text-xs font-bold">{w.translation}</span>
+                      {alreadyHas && <span className="text-xs ml-2" style={{ color: '#4b5563' }}>already in vocab</span>}
+                      <p className="text-gray-400 text-xs mt-0.5">{w.definition}</p>
+                      {w.example && <p className="text-gray-600 text-xs italic">"{w.example}"</p>}
+                    </div>
+                    {!alreadyHas && (
+                      <button
+                        onClick={() => addToVocab(w)}
+                        disabled={justAdded}
+                        className={`text-xs px-2 py-1 shrink-0 transition ${justAdded ? 'text-green-500 border border-green-800' : 'btn-primary'}`}>
+                        {justAdded ? 'Added' : '+ Vocab'}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
 

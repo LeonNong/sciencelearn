@@ -926,7 +926,7 @@ Student's writing:
 Task:
 1. Detect if this text looks AI-generated (too formal, perfect grammar, no personal voice, overly structured)
 2. Find every word/phrase written in ${nativeLanguage} (or any non-${language} language)
-3. For each native-language word found, provide the ${language} translation
+3. For each native-language word found, provide the ${language} translation — extract INDIVIDUAL WORDS only, never whole phrases or sentences
 4. Write all feedback, strengths, and suggestions in ${nativeLanguage}
 
 Return ONLY valid JSON:
@@ -934,7 +934,7 @@ Return ONLY valid JSON:
   "ai_score": 0-100,
   "ai_warning": "brief explanation in ${nativeLanguage} if score > 60, else null",
   "native_words": [
-    { "original": "the native word as written", "translation": "${language} equivalent", "definition": "brief meaning in ${nativeLanguage}", "example": "example sentence in ${language}" }
+    { "original": "the single native WORD as written (one word only, not a phrase)", "translation": "single ${language} equivalent word", "definition": "brief meaning in ${nativeLanguage}", "example": "example sentence in ${language}" }
   ],
   "feedback": "2-3 sentences of encouraging feedback in ${nativeLanguage}",
   "strengths": ["strength in ${nativeLanguage}"],
