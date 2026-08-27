@@ -9,11 +9,11 @@ function AIMessage({ text }) {
       {lines.map((line, i) => {
         if (line.startsWith('## ')) return <h3 key={i} className="font-bold text-primary-600 dark:text-primary-400 text-sm mt-3 mb-1">{line.slice(3)}</h3>
         if (line.startsWith('### ')) return <h4 key={i} className="font-semibold text-gray-800 dark:text-gray-200 text-sm mt-2">{line.slice(4)}</h4>
-        if (line.startsWith('- ') || line.startsWith('* ')) return <div key={i} className="flex gap-2 ml-2"><span className="text-primary-500 mt-0.5">•</span><span className="text-gray-700 dark:text-gray-300">{line.slice(2)}</span></div>
+        if (line.startsWith('- ') || line.startsWith('* ')) return <div key={i} className="flex gap-2 ml-2"><span className="text-primary-500 mt-0.5">•</span><span className="text-gray-200">{line.slice(2)}</span></div>
         if (line.trim() === '') return <div key={i} className="h-1" />
         // Bold **text**
         const parts = line.split(/(\*\*[^*]+\*\*)/g)
-        return <p key={i} className="text-gray-700 dark:text-gray-300">{parts.map((p, j) => p.startsWith('**') ? <strong key={j} className="text-gray-900 dark:text-white">{p.slice(2, -2)}</strong> : p)}</p>
+        return <p key={i} className="text-gray-200">{parts.map((p, j) => p.startsWith('**') ? <strong key={j} className="text-white">{p.slice(2, -2)}</strong> : p)}</p>
       })}
     </div>
   )
@@ -181,7 +181,7 @@ export default function Tutor() {
                 ? 'bg-primary-500 text-white rounded-br-sm whitespace-pre-wrap'
                 : m.error
                   ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 whitespace-pre-wrap'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-sm'}`}>
+                  : 'bg-gray-800 text-gray-100 rounded-bl-sm'}`}>
               {m.role === 'ai' && !m.error ? <AIMessage text={m.text} /> : m.text}
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function Tutor() {
                 style={{ imageRendering: 'pixelated' }} 
               />
             </div>
-            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex gap-1 items-center h-5">
                 {[0,1,2].map(i => <div key={i} className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />)}
               </div>
