@@ -167,7 +167,7 @@ export default function Tutor() {
             {m.role === 'ai' && (
               m.sleeping
                 ? <SleepingFrog onWake={() => { setInput('Hello Frogy!') }} />
-                : <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1">
+                : <div className="w-12 h-12 flex-shrink-0 mt-1">
                     <img 
                       src={awake ? "/frogy_wake.png" : "/logo.png"} 
                       alt="Frogy" 
@@ -188,7 +188,7 @@ export default function Tutor() {
         ))}
         {loading && (
           <div className="flex gap-3">
-            <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
+            <div className="w-12 h-12 flex-shrink-0">
               <img 
                 src={awake ? "/frogy_wake.png" : "/logo.png"} 
                 alt="Frogy" 
