@@ -1,42 +1,42 @@
 const UPDATES = [
-  { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard ¡ª XP / Streak / Level ranking with podium and search'] },
-  { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Dashboard ¡ª Update Log', 'Settings ¡ª Home Language preference, Description field (replaces Year/Grade)'] },
+  { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard â€” XP / Streak / Level ranking with podium and search'] },
+  { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Dashboard â€” Update Log', 'Settings â€” Home Language preference, Description field (replaces Year/Grade)'] },
   { date: '2026-08-27', tag: 'NEW', color: '#10b981', items: [
-    'Language Learning ¡ª Vocabulary flashcards (flip, multi-meaning, pos abbr, Afrikaans v1/v2/tense, AI refresh all)',
-    'Writing ¡ª AI detects AI-generated content, highlights native language words, one-click add to vocab',
-    'Review ¡ª °Ù´ÊÕ¶ style multiple choice with streak counter',
+    'Language Learning â€” Vocabulary flashcards (flip, multi-meaning, pos abbr, Afrikaans v1/v2/tense, AI refresh all)',
+    'Writing â€” AI detects AI-generated content, highlights native language words, one-click add to vocab',
+    'Review â€” ç™¾è¯æ–œ style multiple choice with streak counter',
     'Adaptive Quiz, Grammar Practice, Progress stats',
   ]},
-  { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker ¡ª bulk year setter in AI scan modal', 'Year filter with All Years default'] },
+  { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker â€” bulk year setter in AI scan modal', 'Year filter with All Years default'] },
   { date: '2026-08-26', tag: 'NEW', color: '#10b981', items: [
-    'Grade Tracker ¡ª import from ADAM HTML file, PDF scan support',
-    'Grade Tracker ¡ª collapsible subject groups, clear all, teacher comments',
-    'Grade Tracker ¡ª line chart on Dashboard',
-    'Comments page ¡ª scan report card for teacher remarks',
-    'Register ¡ª confirm password field',
+    'Grade Tracker â€” import from ADAM HTML file, PDF scan support',
+    'Grade Tracker â€” collapsible subject groups, clear all, teacher comments',
+    'Grade Tracker â€” line chart on Dashboard',
+    'Comments page â€” scan report card for teacher remarks',
+    'Register â€” confirm password field',
   ]},
-  { date: '2026-08-25', tag: 'NEW', color: '#10b981', items: ['Notes page ¡ª create, edit, pin, search, auto-save'] },
+  { date: '2026-08-25', tag: 'NEW', color: '#10b981', items: ['Notes page â€” create, edit, pin, search, auto-save'] },
   { date: '2026-08-25', tag: 'FIX', color: '#3b82f6', items: ['Flashcard badge colors and quiz text contrast for dark theme', 'AI structured responses, calendar view in Planner'] },
   { date: '2026-08-24', tag: 'NEW', color: '#10b981', items: [
-    'Settings page ¡ª display name, school, grade, avatar color',
-    'Pixel art UI ¡ª font, borders, colors, sidebar, pixel frog logo',
-    'Memory Typing game ¡ª 3 difficulty levels',
+    'Settings page â€” display name, school, grade, avatar color',
+    'Pixel art UI â€” font, borders, colors, sidebar, pixel frog logo',
+    'Memory Typing game â€” 3 difficulty levels',
     'Floating feedback button',
-    'LARE engine ¡ª adaptive learning priority ranking',
+    'LARE engine â€” adaptive learning priority ranking',
   ]},
   { date: '2026-08-23', tag: 'NEW', color: '#10b981', items: [
     'AI rate limiting with daily usage display',
     'Switched AI from Gemini to OpenAI GPT-4o',
-    'Chat rooms ¡ª delete room for owner/admin',
+    'Chat rooms â€” delete room for owner/admin',
     'Lazy loading + Render keep-alive ping',
   ]},
-  { date: '2026-08-22', tag: 'NEW', color: '#10b981', items: ['Initial launch ¡ª AI Tutor, Quiz, Flashcards, Study Planner, OCR Scanner, Chat Rooms'] },
+  { date: '2026-08-22', tag: 'NEW', color: '#10b981', items: ['Initial launch â€” AI Tutor, Quiz, Flashcards, Study Planner, OCR Scanner, Chat Rooms'] },
 ]
 
 export default function UpdateLog() {
   return (
     <div className="card">
-      <h2 className="font-bold text-white mb-4">?? Update Log</h2>
+      <h2 className="font-bold text-white mb-4">ğŸ“‹ Update Log</h2>
       <div className="space-y-3">
         {UPDATES.map((entry, i) => (
           <div key={i} className="flex gap-3 text-xs">
@@ -47,7 +47,7 @@ export default function UpdateLog() {
             </span>
             <ul className="space-y-1">
               {entry.items.map((item, j) => (
-                <li key={j} className="text-gray-400">¡ª {item}</li>
+                <li key={j} className="text-gray-400">â€” {item}</li>
               ))}
             </ul>
           </div>

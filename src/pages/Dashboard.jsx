@@ -45,10 +45,10 @@ export default function Dashboard() {
       {/* Welcome */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-6 text-white">
         <h1 className="text-2xl font-bold">Welcome back, {user?.username}! 👋</h1>
-        <p className="text-primary-100 mt-1">LARE has analysed your topics �?ready to study smarter?</p>
+        <p className="text-primary-100 mt-1">LARE has analysed your topics — ready to study smarter?</p>
         <div className="flex flex-wrap gap-4 mt-4">
           {[
-            { icon: '�?, label: 'XP', val: user?.xp || 0 },
+            { icon: '⭐', label: 'XP', val: user?.xp || 0 },
             { icon: '🏆', label: 'Level', val: user?.level || 1 },
             { icon: '🔥', label: 'Day Streak', val: user?.streak || 0 },
             { icon: '🃏', label: 'Flashcards', val: data?.flashcardCount || 0 },
@@ -66,7 +66,7 @@ export default function Dashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          { to: '/lare',       icon: '�?, label: 'LARE',         color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
+          { to: '/lare',       icon: '⚡', label: 'LARE',         color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
           { to: '/tutor',      icon: '🤖', label: 'Ask AI',        color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
           { to: '/quiz',       icon: '🧪', label: 'Take Quiz',     color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
           { to: '/flashcards', icon: '🃏', label: 'Flashcards',    color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
@@ -75,7 +75,7 @@ export default function Dashboard() {
           { to: '/notes',      icon: '📓', label: 'Notes',         color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' },
           { to: '/grades',     icon: '📈', label: 'Grade Tracker', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
           { to: '/memory',     icon: '⌨️', label: 'Memory Typing', color: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300' },
-          { to: '/chat',       icon: '🗨�?, label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+          { to: '/chat',       icon: '🗨️', label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
           { to: '/language',   icon: '🌐', label: 'Language',       color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' },
           { to: '/leaderboard',icon: '🏆', label: 'Leaderboard',    color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
         ].map(({ to, icon, label, color }) => (
@@ -91,7 +91,7 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-white">📈 Grade Tracker</h2>
-            <Link to="/grades" className="text-xs text-primary-400 hover:text-primary-300 transition">View all �?/Link>
+            <Link to="/grades" className="text-xs text-primary-400 hover:text-primary-300 transition">View all →</Link>
           </div>
           {grades.length > 0 ? (() => {
             const subjects = [...new Set(grades.map(g => g.subject))]
@@ -123,7 +123,7 @@ export default function Dashboard() {
               />
             )
           })() : (
-            <p className="text-gray-500 text-sm text-center py-8">No grades yet �?<Link to="/grades" className="text-primary-400 hover:underline">add your first result</Link></p>
+            <p className="text-gray-500 text-sm text-center py-8">No grades yet — <Link to="/grades" className="text-primary-400 hover:underline">add your first result</Link></p>
           )}
         </div>
 
