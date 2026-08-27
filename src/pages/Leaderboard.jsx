@@ -19,11 +19,15 @@ function XPBar({ xp, level }) {
 export default function Leaderboard() {
   const [board, setBoard] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('xp') // xp | streak | level
+  const [filter, setFilter] = useState('xp')
   const [search, setSearch] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    api.leaderboard().then(setBoard).catch(() => {}).finally(() => setLoading(false))
+    api.leaderboard()
+      .then(data => { console.log('leaderboard data:', data); setBoard(data) })
+      .catch(err => { console.error('leaderboard error:', err); setError(err.message) })
+      .finally(() => setLoading(false))
   }, [])
 
   const sorted = [...board]
@@ -36,6 +40,7 @@ export default function Leaderboard() {
   const myRank = me ? sorted.findIndex(u => u.id === me.id) + 1 : null
 
   if (loading) return <p className="text-gray-500 text-xs text-center py-12">Loading...</p>
+  if (error) return <p className="text-red-400 text-xs text-center py-12">Error: {error}</p>
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
