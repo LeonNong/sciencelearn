@@ -761,12 +761,21 @@ app.get('/api/lang/vocab', authMiddleware, async (req, res) => {
 
 // AI generate vocab entry
 app.post('/api/lang/vocab/generate', authMiddleware, async (req, res) => {
-  const { word, language } = req.body;
+  const { word, language, translateFrom } = req.body;
   if (!word) return res.status(400).json({ error: 'Word required' });
   const isAfrikaans = (language || '').toLowerCase() === 'afrikaans';
-  const prompt = `For the ${language || 'English'} word "${word}", return ONLY valid JSON (no markdown):
+
+  // If translateFrom is set, first find the target language equivalent
+  const targetWord = translateFrom
+    ? `the ${language} translation of the ${translateFrom} word "${word}"`
+    : `"${word}"`;
+  const wordInstruction = translateFrom
+    ? `The student entered the ${translateFrom} word "${word}". First identify the correct ${language} translation, then use that as the word field.`
+    : '';
+  const prompt = `${wordInstruction}
+For the ${language} word ${targetWord}, return ONLY valid JSON (no markdown):
 {
-  "word": "${word}",
+  "word": "the ${language} word${translateFrom ? ` (translation of ${word})` : ''}",
   "language": "${language || 'English'}",
   "meanings": [
     {
