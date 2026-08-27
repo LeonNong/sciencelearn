@@ -19,6 +19,7 @@ const Notes = lazy(() => import('./pages/Notes'))
 const Grades = lazy(() => import('./pages/Grades'))
 const Comments = lazy(() => import('./pages/Comments'))
 const Language = lazy(() => import('./pages/Language'))
+const Leaderboard = lazy(() => import('./pages/Leaderboard'))
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="grades" element={<Grades />} />
           <Route path="comments" element={<Comments />} />
           <Route path="language" element={<Language />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
         </Route>
       </Routes>
     </Suspense>

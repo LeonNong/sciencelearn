@@ -77,6 +77,7 @@ export default function Dashboard() {
           { to: '/memory',     icon: '⌨️', label: 'Memory Typing', color: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300' },
           { to: '/chat',       icon: '🗨️', label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
           { to: '/language',   icon: '🌐', label: 'Language',       color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' },
+          { to: '/leaderboard',icon: '🏆', label: 'Leaderboard',    color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
         ].map(({ to, icon, label, color }) => (
           <Link key={to} to={to} className={`card flex flex-col items-center gap-2 py-4 hover:shadow-md transition cursor-pointer ${color}`}>
             <span className="text-2xl">{icon}</span>

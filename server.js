@@ -198,6 +198,36 @@ app.patch('/api/auth/profile', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ==================== LEADERBOARD ====================
+
+app.get('/api/leaderboard', authMiddleware, async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, display_name, avatar_color, xp, level, streak, school, grade')
+      .order('xp', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    // Add rank and mark current user
+    const ranked = data.map((u, i) => ({
+      rank: i + 1,
+      id: u.id,
+      username: u.username,
+      displayName: u.display_name || u.username,
+      avatarColor: u.avatar_color,
+      xp: u.xp,
+      level: u.level,
+      streak: u.streak,
+      school: u.school,
+      description: u.grade,
+      isMe: u.id === req.user.id,
+    }));
+    res.json(ranked);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ==================== DASHBOARD ====================
 
 app.get('/api/dashboard', authMiddleware, async (req, res) => {

@@ -45,6 +45,7 @@ export const api = {
   updateProfile: (d) => patch('/auth/profile', d),
   // Dashboard
   dashboard: () => req('/dashboard'),
+  leaderboard: () => req('/leaderboard'),
   // AI
   tutor: (d) => post('/ai/tutor', d, 90000),
   generateQuiz: (d) => post('/ai/quiz/generate', d, 90000),
