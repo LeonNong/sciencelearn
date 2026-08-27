@@ -162,6 +162,32 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Update Log */}
+      <div className="card">
+        <h2 className="font-bold text-white mb-4">📋 Update Log</h2>
+        <div className="space-y-3">
+          {[
+            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard — XP / Streak / Level ranking with podium'] },
+            { date: '2026-08-27', tag: 'NEW', color: '#10b981', items: ['Language Learning — Vocabulary flashcards, Spaced Repetition review (百词斩 style), Adaptive Quiz, Grammar Practice, Writing with AI feedback & native word detection'] },
+            { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker year filter — bulk year setter in AI scan modal', 'Settings — replaced Year/Grade dropdown with free-text description (max 14 chars)'] },
+            { date: '2026-08-26', tag: 'NEW', color: '#10b981', items: ['Grade Tracker — import from ADAM HTML file', 'Teacher Comments page — scan report card for remarks', 'Dashboard — grade tracker line chart, all feature quick links'] },
+            { date: '2026-08-25', tag: 'FIX', color: '#3b82f6', items: ['Flashcard & Quiz text contrast fixed for dark theme', 'Grade scan PDF support', 'Grade history collapsible by subject, clear all button'] },
+          ].map((entry, i) => (
+            <div key={i} className="flex gap-3 text-xs">
+              <div className="flex-shrink-0 w-20 text-gray-600">{entry.date}</div>
+              <span className="flex-shrink-0 px-1.5 py-0.5 text-xs font-bold h-fit" style={{ background: entry.color + '20', color: entry.color, border: `1px solid ${entry.color}40` }}>
+                {entry.tag}
+              </span>
+              <ul className="space-y-1">
+                {entry.items.map((item, j) => (
+                  <li key={j} className="text-gray-400">— {item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
