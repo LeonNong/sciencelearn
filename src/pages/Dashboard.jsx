@@ -73,7 +73,6 @@ export default function Dashboard() {
           { to: '/scanner',    icon: '📷', label: 'Scan HW',       color: 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300' },
           { to: '/notes',      icon: '📓', label: 'Notes',         color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' },
           { to: '/grades',     icon: '📈', label: 'Grade Tracker', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
-          { to: '/comments',   icon: '💬', label: 'Comments',      color: 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300' },
           { to: '/memory',     icon: '⌨️', label: 'Memory Typing', color: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300' },
           { to: '/chat',       icon: '🗨️', label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
           { to: '/language',   icon: '🌐', label: 'Language',       color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' },

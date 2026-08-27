@@ -12,7 +12,6 @@ const nav = [
   { to: '/memory',    icon: '⌨️', label: 'Memory Typing' },
   { to: '/notes',     icon: '📓', label: 'Notes' },
   { to: '/grades',    icon: '📈', label: 'Grade Tracker' },
-  { to: '/comments',  icon: '💬', label: 'Comments' },
   { to: '/language',    icon: '🌐', label: 'Language' },
   { to: '/leaderboard', icon: '🏆', label: 'Leaderboard' },
   { to: '/settings',  icon: '⚙️', label: 'Settings' },
