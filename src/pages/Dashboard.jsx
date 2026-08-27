@@ -168,11 +168,38 @@ export default function Dashboard() {
         <h2 className="font-bold text-white mb-4">📋 Update Log</h2>
         <div className="space-y-3">
           {[
-            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard — XP / Streak / Level ranking with podium'] },
-            { date: '2026-08-27', tag: 'NEW', color: '#10b981', items: ['Language Learning — Vocabulary flashcards, Spaced Repetition review (百词斩 style), Adaptive Quiz, Grammar Practice, Writing with AI feedback & native word detection'] },
-            { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker year filter — bulk year setter in AI scan modal', 'Settings — replaced Year/Grade dropdown with free-text description (max 14 chars)'] },
-            { date: '2026-08-26', tag: 'NEW', color: '#10b981', items: ['Grade Tracker — import from ADAM HTML file', 'Teacher Comments page — scan report card for remarks', 'Dashboard — grade tracker line chart, all feature quick links'] },
-            { date: '2026-08-25', tag: 'FIX', color: '#3b82f6', items: ['Flashcard & Quiz text contrast fixed for dark theme', 'Grade scan PDF support', 'Grade history collapsible by subject, clear all button'] },
+            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard — XP / Streak / Level ranking with podium and search'] },
+            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Dashboard — Update Log', 'Settings — Home Language preference, Description field (replaces Year/Grade)'] },
+            { date: '2026-08-27', tag: 'NEW', color: '#10b981', items: [
+              'Language Learning — Vocabulary flashcards (flip, multi-meaning, pos abbr, Afrikaans v1/v2/tense, AI refresh all)',
+              'Writing — AI detects AI-generated content, highlights native language words, one-click add to vocab',
+              'Review — 百词斩 style multiple choice with streak counter',
+              'Adaptive Quiz, Grammar Practice, Progress stats',
+            ]},
+            { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker — bulk year setter in AI scan modal', 'Year filter with All Years default'] },
+            { date: '2026-08-26', tag: 'NEW', color: '#10b981', items: [
+              'Grade Tracker — import from ADAM HTML file, PDF scan support',
+              'Grade Tracker — collapsible subject groups, clear all, teacher comments',
+              'Grade Tracker — line chart on Dashboard',
+              'Comments page — scan report card for teacher remarks',
+              'Register — confirm password field',
+            ]},
+            { date: '2026-08-25', tag: 'NEW', color: '#10b981', items: ['Notes page — create, edit, pin, search, auto-save'] },
+            { date: '2026-08-25', tag: 'FIX', color: '#3b82f6', items: ['Flashcard badge colors and quiz text contrast for dark theme', 'AI structured responses, calendar view in Planner'] },
+            { date: '2026-08-24', tag: 'NEW', color: '#10b981', items: [
+              'Settings page — display name, school, grade, avatar color',
+              'Pixel art UI — font, borders, colors, sidebar, pixel frog logo',
+              'Memory Typing game — 3 difficulty levels',
+              'Floating feedback button',
+              'LARE engine — adaptive learning priority ranking',
+            ]},
+            { date: '2026-08-23', tag: 'NEW', color: '#10b981', items: [
+              'AI rate limiting with daily usage display',
+              'Switched AI from Gemini to OpenAI GPT-4o',
+              'Chat rooms — delete room for owner/admin',
+              'Lazy loading + Render keep-alive ping',
+            ]},
+            { date: '2026-08-22', tag: 'NEW', color: '#10b981', items: ['Initial launch — AI Tutor, Quiz, Flashcards, Study Planner, OCR Scanner, Chat Rooms'] },
           ].map((entry, i) => (
             <div key={i} className="flex gap-3 text-xs">
               <div className="flex-shrink-0 w-20 text-gray-600">{entry.date}</div>
