@@ -55,8 +55,8 @@ function SleepingFrog({ onWake }) {
   )
 }
 
-const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
-const DIFFICULTIES = ['beginner', 'intermediate', 'advanced']
+const SUBJECTS = ['Just Chat', 'Biology', 'Chemistry', 'Physics', 'Mathematics', 'Mathematical Literacy', 'English', 'Afrikaans', 'isiZulu', 'Life Orientation']
+const GRADES = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12']
 
 export default function Tutor() {
   const [messages, setMessages] = useState([
@@ -65,8 +65,8 @@ export default function Tutor() {
   const [idle, setIdle] = useState(true)
   const [awake, setAwake] = useState(false) // 新增：追踪青蛙是否醒着
   const [input, setInput] = useState('')
-  const [subject, setSubject] = useState('Biology')
-  const [difficulty, setDifficulty] = useState('intermediate')
+  const [subject, setSubject] = useState('Just Chat')
+  const [difficulty, setDifficulty] = useState('Grade 10')
   const [loading, setLoading] = useState(false)
   const [remaining, setRemaining] = useState(null)
   const bottomRef = useRef(null)
@@ -145,9 +145,9 @@ export default function Tutor() {
           </select>
         </div>
         <div>
-          <label className="label">Level</label>
+          <label className="label">Grade</label>
           <select className="input py-1.5" value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-            {DIFFICULTIES.map(d => <option key={d}>{d}</option>)}
+            {GRADES.map(d => <option key={d}>{d}</option>)}
           </select>
         </div>
         {remaining !== null && (
