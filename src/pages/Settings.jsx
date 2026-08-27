@@ -8,7 +8,6 @@ const AVATAR_COLORS = [
   '#F97316','#6366F1','#14B8A6','#A855F7',
 ]
 
-const GRADES = ['Year 7','Year 8','Year 9','Year 10','Year 11','Year 12','Year 13','Other']
 const HOME_LANGUAGES = ['English', 'Chinese', 'Afrikaans', 'isiZulu', 'French', 'Spanish', 'Portuguese', 'German']
 
 export default function Settings() {
@@ -73,13 +72,13 @@ export default function Settings() {
             placeholder="Your school name" maxLength={60} />
         </div>
 
-        {/* Grade */}
+        {/* Description */}
         <div>
-          <label className="label">Year / Grade</label>
-          <select className="input" value={form.grade} onChange={e => set('grade', e.target.value)}>
-            <option value="">Select year group</option>
-            {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
+          <label className="label">Description</label>
+          <input className="input" value={form.grade}
+            onChange={e => set('grade', e.target.value)}
+            placeholder="e.g. Grade 10, Science lover..." maxLength={14} />
+          <p className="text-xs text-gray-400 mt-1">{form.grade.length}/14</p>
         </div>
 
         {/* Home language */}
