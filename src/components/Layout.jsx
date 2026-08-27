@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import FeedbackButton from './FeedbackButton'
+import ErrorBoundary from './ErrorBoundary'
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -16,7 +17,9 @@ export default function Layout() {
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
       <FeedbackButton />

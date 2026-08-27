@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import Loader from '../components/Loader'
+import UpdateLog from '../components/UpdateLog'
 import { Line, Doughnut } from 'react-chartjs-2'
 import {
   Chart, CategoryScale, LinearScale, PointElement, LineElement,
@@ -44,10 +45,10 @@ export default function Dashboard() {
       {/* Welcome */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-6 text-white">
         <h1 className="text-2xl font-bold">Welcome back, {user?.username}! 👋</h1>
-        <p className="text-primary-100 mt-1">LARE has analysed your topics — ready to study smarter?</p>
+        <p className="text-primary-100 mt-1">LARE has analysed your topics �?ready to study smarter?</p>
         <div className="flex flex-wrap gap-4 mt-4">
           {[
-            { icon: '⭐', label: 'XP', val: user?.xp || 0 },
+            { icon: '�?, label: 'XP', val: user?.xp || 0 },
             { icon: '🏆', label: 'Level', val: user?.level || 1 },
             { icon: '🔥', label: 'Day Streak', val: user?.streak || 0 },
             { icon: '🃏', label: 'Flashcards', val: data?.flashcardCount || 0 },
@@ -65,7 +66,7 @@ export default function Dashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          { to: '/lare',       icon: '⚡', label: 'LARE',         color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
+          { to: '/lare',       icon: '�?, label: 'LARE',         color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' },
           { to: '/tutor',      icon: '🤖', label: 'Ask AI',        color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' },
           { to: '/quiz',       icon: '🧪', label: 'Take Quiz',     color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' },
           { to: '/flashcards', icon: '🃏', label: 'Flashcards',    color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' },
@@ -74,7 +75,7 @@ export default function Dashboard() {
           { to: '/notes',      icon: '📓', label: 'Notes',         color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' },
           { to: '/grades',     icon: '📈', label: 'Grade Tracker', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
           { to: '/memory',     icon: '⌨️', label: 'Memory Typing', color: 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300' },
-          { to: '/chat',       icon: '🗨️', label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+          { to: '/chat',       icon: '🗨�?, label: 'Chat',          color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
           { to: '/language',   icon: '🌐', label: 'Language',       color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' },
           { to: '/leaderboard',icon: '🏆', label: 'Leaderboard',    color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' },
         ].map(({ to, icon, label, color }) => (
@@ -90,7 +91,7 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-white">📈 Grade Tracker</h2>
-            <Link to="/grades" className="text-xs text-primary-400 hover:text-primary-300 transition">View all →</Link>
+            <Link to="/grades" className="text-xs text-primary-400 hover:text-primary-300 transition">View all �?/Link>
           </div>
           {grades.length > 0 ? (() => {
             const subjects = [...new Set(grades.map(g => g.subject))]
@@ -122,7 +123,7 @@ export default function Dashboard() {
               />
             )
           })() : (
-            <p className="text-gray-500 text-sm text-center py-8">No grades yet — <Link to="/grades" className="text-primary-400 hover:underline">add your first result</Link></p>
+            <p className="text-gray-500 text-sm text-center py-8">No grades yet �?<Link to="/grades" className="text-primary-400 hover:underline">add your first result</Link></p>
           )}
         </div>
 
@@ -162,58 +163,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Update Log */}
-      <div className="card">
-        <h2 className="font-bold text-white mb-4">📋 Update Log</h2>
-        <div className="space-y-3">
-          {[
-            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard — XP / Streak / Level ranking with podium and search'] },
-            { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Dashboard — Update Log', 'Settings — Home Language preference, Description field (replaces Year/Grade)'] },
-            { date: '2026-08-27', tag: 'NEW', color: '#10b981', items: [
-              'Language Learning — Vocabulary flashcards (flip, multi-meaning, pos abbr, Afrikaans v1/v2/tense, AI refresh all)',
-              'Writing — AI detects AI-generated content, highlights native language words, one-click add to vocab',
-              'Review — 百词斩 style multiple choice with streak counter',
-              'Adaptive Quiz, Grammar Practice, Progress stats',
-            ]},
-            { date: '2026-08-27', tag: 'FIX', color: '#3b82f6', items: ['Grade Tracker — bulk year setter in AI scan modal', 'Year filter with All Years default'] },
-            { date: '2026-08-26', tag: 'NEW', color: '#10b981', items: [
-              'Grade Tracker — import from ADAM HTML file, PDF scan support',
-              'Grade Tracker — collapsible subject groups, clear all, teacher comments',
-              'Grade Tracker — line chart on Dashboard',
-              'Comments page — scan report card for teacher remarks',
-              'Register — confirm password field',
-            ]},
-            { date: '2026-08-25', tag: 'NEW', color: '#10b981', items: ['Notes page — create, edit, pin, search, auto-save'] },
-            { date: '2026-08-25', tag: 'FIX', color: '#3b82f6', items: ['Flashcard badge colors and quiz text contrast for dark theme', 'AI structured responses, calendar view in Planner'] },
-            { date: '2026-08-24', tag: 'NEW', color: '#10b981', items: [
-              'Settings page — display name, school, grade, avatar color',
-              'Pixel art UI — font, borders, colors, sidebar, pixel frog logo',
-              'Memory Typing game — 3 difficulty levels',
-              'Floating feedback button',
-              'LARE engine — adaptive learning priority ranking',
-            ]},
-            { date: '2026-08-23', tag: 'NEW', color: '#10b981', items: [
-              'AI rate limiting with daily usage display',
-              'Switched AI from Gemini to OpenAI GPT-4o',
-              'Chat rooms — delete room for owner/admin',
-              'Lazy loading + Render keep-alive ping',
-            ]},
-            { date: '2026-08-22', tag: 'NEW', color: '#10b981', items: ['Initial launch — AI Tutor, Quiz, Flashcards, Study Planner, OCR Scanner, Chat Rooms'] },
-          ].map((entry, i) => (
-            <div key={i} className="flex gap-3 text-xs">
-              <div className="flex-shrink-0 w-20 text-gray-600">{entry.date}</div>
-              <span className="flex-shrink-0 px-1.5 py-0.5 text-xs font-bold h-fit" style={{ background: entry.color + '20', color: entry.color, border: `1px solid ${entry.color}40` }}>
-                {entry.tag}
-              </span>
-              <ul className="space-y-1">
-                {entry.items.map((item, j) => (
-                  <li key={j} className="text-gray-400">— {item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
+            <UpdateLog />
     </div>
   )
 }
+

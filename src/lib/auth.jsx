@@ -8,9 +8,24 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const token = localStorage.getItem('sl_token')
+    if (!token) { setLoading(false); return }
+
+    // Optimistic: show cached user immediately while we verify
     const stored = localStorage.getItem('sl_user')
     if (stored) setUser(JSON.parse(stored))
-    setLoading(false)
+
+    api.me()
+      .then(userData => {
+        setUser(userData)
+        localStorage.setItem('sl_user', JSON.stringify(userData))
+      })
+      .catch(() => {
+        localStorage.removeItem('sl_token')
+        localStorage.removeItem('sl_user')
+        setUser(null)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   function login(userData, token) {
@@ -31,8 +46,11 @@ export function AuthProvider({ children }) {
     setUser(updated)
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, loading, updateUser }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading, updateUser }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => useContext(AuthContext)
-

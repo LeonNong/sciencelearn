@@ -1,6 +1,6 @@
 export default function Loader({ className = '' }) {
   return (
-    <div className={`flex flex-col items-center justify-center gap-3 ${className}`} style={{ marginTop: '150px' }}>
+    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
       <svg viewBox="0 0 32 32" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="3">
         <clipPath id="ring-clip">
           <polygon points="0 0,32 0,32 32,0 32,0 30,14 16.1,0 16.1" />
