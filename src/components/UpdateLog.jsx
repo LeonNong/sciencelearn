@@ -2,6 +2,8 @@ const UPDATES = [
   { date: '2026-08-29', tag: 'NEW', color: '#10b981', items: [
     'AI Tutor — added “Just Chat” subject (default), grade selector (Grade 7–12) replaces difficulty level',
     'AI Tutor — Froggy awake avatar background now matches page (transparent)',
+    'AI Tutor — fixed message text color for dark theme',
+    'Language — # prefix replaces /home for home-language word translation',
   ]},
   { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Leaderboard — XP / Streak / Level ranking with podium and search'] },
   { date: '2026-08-28', tag: 'NEW', color: '#10b981', items: ['Dashboard — Update Log', 'Settings — Home Language preference, Description field (replaces Year/Grade)'] },
