@@ -20,10 +20,10 @@ export default function VocabTab({ lang }) {
     setLoading(true); setError('')
     try {
       let targetWord = word.trim()
-      // /home prefix: translate from home language to target language first
-      if (targetWord.toLowerCase().startsWith('/home ')) {
-        const homeWord = targetWord.slice(6).trim()
-        if (!homeWord) { setError('Enter a word after /home'); setLoading(false); return }
+      // # prefix: translate from home language to target language first
+      if (targetWord.startsWith('#')) {
+        const homeWord = targetWord.slice(1).trim()
+        if (!homeWord) { setError('Enter a word after #'); setLoading(false); return }
         const homeLang = localStorage.getItem('sl_home_lang') || 'English'
         const res = await api.generateVocab({ word: homeWord, language: lang, translateFrom: homeLang })
         setVocab(v => [res, ...v])
@@ -73,7 +73,7 @@ export default function VocabTab({ lang }) {
     <div className="space-y-4">
       <form onSubmit={addWord} className="flex gap-2">
         <input className="input flex-1" value={word} onChange={e => setWord(e.target.value)}
-          placeholder={`${lang} word, or /home watch to translate from home language`} />
+          placeholder={`${lang} word, or #watch to translate from home language`} />
         <button type="submit" disabled={loading} className="btn-primary px-4">
           {loading ? '...' : '+ Add'}
         </button>

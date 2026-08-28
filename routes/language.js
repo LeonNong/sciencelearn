@@ -26,7 +26,7 @@ router.post('/vocab/generate', authMiddleware, async (req, res) => {
     ? `the ${language} translation of the ${translateFrom} word "${word}"`
     : `"${word}"`;
   const wordInstruction = translateFrom
-    ? `The student entered the ${translateFrom} word "${word}". First identify the correct ${language} translation, then use that as the word field.`
+    ? `The student entered the ${translateFrom} word "${word}" using the # prefix. First identify the correct ${language} translation, then use that as the word field.`
     : '';
   const prompt = `${wordInstruction}
 For the ${language} word ${targetWord}, return ONLY valid JSON (no markdown):
