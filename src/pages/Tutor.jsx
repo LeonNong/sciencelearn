@@ -65,8 +65,6 @@ export default function Tutor() {
   const [idle, setIdle] = useState(true)
   const [awake, setAwake] = useState(false) // 新增：追踪青蛙是否醒着
   const [input, setInput] = useState('')
-  const [subject, setSubject] = useState('Just Chat')
-  const [difficulty, setDifficulty] = useState('Grade 10')
   const [loading, setLoading] = useState(false)
   const [remaining, setRemaining] = useState(null)
   const bottomRef = useRef(null)
@@ -104,7 +102,7 @@ export default function Tutor() {
     setInput('')
     setLoading(true)
     try {
-      const res = await api.tutor({ question, subject, difficulty })
+      const res = await api.tutor({ question })
       setMessages(m => [...m, { role: 'ai', text: res.answer }])
       setRemaining(r => r !== null ? r - 1 : null)
       
@@ -137,21 +135,9 @@ export default function Tutor() {
   return (
     <div className="max-w-3xl mx-auto flex flex-col h-full" style={{ height: 'calc(100vh - 7rem)' }}>
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 mb-4 items-end">
-        <div>
-          <label className="label">Subject</label>
-          <select className="input py-1.5" value={subject} onChange={e => setSubject(e.target.value)}>
-            {SUBJECTS.map(s => <option key={s}>{s}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="label">Grade</label>
-          <select className="input py-1.5" value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-            {GRADES.map(d => <option key={d}>{d}</option>)}
-          </select>
-        </div>
+      <div className="flex flex-wrap gap-3 mb-4 items-end justify-end">
         {remaining !== null && (
-          <div className={`ml-auto text-sm px-3 py-1.5 rounded-full font-medium
+          <div className={`text-sm px-3 py-1.5 rounded-full font-medium
             ${remaining <= 3 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
             : remaining <= 8 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
             : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
@@ -222,7 +208,7 @@ export default function Tutor() {
         <input
           className="input flex-1"
           value={input} onChange={e => setInput(e.target.value)}
-          placeholder={`Ask a ${subject} question...`}
+          placeholder="Ask anything..."
           disabled={loading}
         />
         <button type="submit" disabled={loading || !input.trim()} className="btn-primary px-5">

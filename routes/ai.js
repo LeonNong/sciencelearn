@@ -56,26 +56,10 @@ router.get('/usage', authMiddleware, (req, res) => {
 
 // POST /api/ai/tutor
 router.post('/tutor', authMiddleware, checkAiLimit('tutor'), async (req, res) => {
-  const { question, subject, difficulty = 'intermediate' } = req.body;
+  const { question } = req.body;
   if (!question) return res.status(400).json({ error: 'Question required' });
-  const prompt = `You are a friendly and encouraging ${subject || 'Science'} tutor for high school students.
-Answer at ${difficulty} level. Use this exact structure:
+  const prompt = `You are a helpful, friendly AI assistant. Answer the following question clearly and accurately. Be concise but thorough. If it's a factual or academic question, explain it well. If it's casual conversation, respond naturally.
 
-## 📌 Main Explanation
-[2-3 clear paragraphs explaining the concept simply]
-
-## 💡 Key Points
-- [point 1]
-- [point 2]
-- [point 3]
-
-## 🌍 Real-World Example
-[One relatable everyday example]
-
-## ⚠️ Common Mistake to Avoid
-[One thing students often get wrong]
-
-Be warm, encouraging and clear. Use simple language. End with a motivating sentence.
 Question: ${question}`;
   const result = await callGemini(prompt);
   if (result.error) return res.status(503).json({ error: result.error });
