@@ -66,14 +66,10 @@ export default function Tutor() {
   const [awake, setAwake] = useState(false) // 新增：追踪青蛙是否醒着
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [remaining, setRemaining] = useState(null)
   const bottomRef = useRef(null)
   const wakeTimeoutRef = useRef(null) // 新增：用于清除定时器
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
-  useEffect(() => {
-    api.aiUsage().then(u => setRemaining(u.tutor?.remaining ?? null)).catch(() => {})
-  }, [])
 
   // 新增：清理定时器
   useEffect(() => {
@@ -104,7 +100,6 @@ export default function Tutor() {
     try {
       const res = await api.tutor({ question })
       setMessages(m => [...m, { role: 'ai', text: res.answer }])
-      setRemaining(r => r !== null ? r - 1 : null)
       
       // AI回应后，保持醒着状态10秒，然后回到睡觉状态
       wakeTimeoutRef.current = setTimeout(() => {
@@ -136,14 +131,6 @@ export default function Tutor() {
     <div className="max-w-3xl mx-auto flex flex-col h-full" style={{ height: 'calc(100vh - 7rem)' }}>
       {/* Controls */}
       <div className="flex flex-wrap gap-3 mb-4 items-end justify-end">
-        {remaining !== null && (
-          <div className={`text-sm px-3 py-1.5 rounded-full font-medium
-            ${remaining <= 3 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-            : remaining <= 8 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-            {remaining} / 20 asks left today
-          </div>
-        )}
       </div>
 
       {/* Chat */}

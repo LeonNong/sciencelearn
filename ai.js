@@ -4,7 +4,7 @@ const https = require('https');
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-async function callGemini(prompt) {
+async function callGemini(prompt, maxTokens = 1500) {
   if (!OPENAI_KEY) {
     return { error: 'No AI API key configured. Add OPENAI_API_KEY to .env' };
   }
@@ -13,7 +13,7 @@ async function callGemini(prompt) {
     model: MODEL,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.7,
-    max_tokens: 1500,
+    max_tokens: maxTokens,
   });
 
   return new Promise((resolve) => {

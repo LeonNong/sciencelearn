@@ -54,14 +54,16 @@ router.get('/usage', authMiddleware, (req, res) => {
   res.json(usage);
 });
 
-// POST /api/ai/tutor
-router.post('/tutor', authMiddleware, checkAiLimit('tutor'), async (req, res) => {
-  const { question } = req.body;
+// POST /api/ai/tutor — no daily limit, input capped at 2000 chars, output capped at 800 tokens
+router.post('/tutor', authMiddleware, async (req, res) => {
+  let { question } = req.body;
   if (!question) return res.status(400).json({ error: 'Question required' });
+  // Cap input
+  if (question.length > 2000) question = question.slice(0, 2000);
   const prompt = `You are a helpful, friendly AI assistant. Answer the following question clearly and accurately. Be concise but thorough. If it's a factual or academic question, explain it well. If it's casual conversation, respond naturally.
 
 Question: ${question}`;
-  const result = await callGemini(prompt);
+  const result = await callGemini(prompt, 800);
   if (result.error) return res.status(503).json({ error: result.error });
   await awardXP(req.user.id, 5);
   res.json({ answer: result.text });
