@@ -3,16 +3,13 @@ import { useAuth } from '../lib/auth'
 
 const nav = [
   { to: '/',          icon: '📊', label: 'Dashboard' },
-  { to: '/lare',      icon: '⚡', label: 'LARE' },
   { to: '/tutor',     icon: '🤖', label: 'AI Tutor' },
-  { to: '/quiz',      icon: '🧪', label: 'Quiz' },
-  { to: '/flashcards',icon: '🃏', label: 'Flashcards' },
   { to: '/planner',   icon: '📅', label: 'Study Planner' },
   { to: '/scanner',   icon: '📷', label: 'OCR Scanner' },
   { to: '/memory',    icon: '⌨️', label: 'Memory Typing' },
   { to: '/notes',     icon: '📓', label: 'Notes' },
   { to: '/grades',    icon: '📈', label: 'Grade Tracker' },
-  { to: '/language',    icon: '🌐', label: 'Language' },
+  { to: '/language',  icon: '🌐', label: 'Language' },
   { to: '/leaderboard', icon: '🏆', label: 'Leaderboard' },
   { to: '/settings',  icon: '⚙️', label: 'Settings' },
   { to: '/chat',      icon: '💬', label: 'Chat Rooms' },
