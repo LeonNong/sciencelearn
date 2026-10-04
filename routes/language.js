@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { callGemini } = require('../ai');
+const { parseAiJson } = require('../lib/parseAiJson');
 const { authMiddleware } = require('../middleware/auth');
 const supabase = require('../middleware/supabase');
 
@@ -203,25 +204,25 @@ Task:
 3. For each native-language word found, provide the ${language} translation — extract INDIVIDUAL WORDS only, never whole phrases or sentences
 4. Write all feedback, strengths, and suggestions in ${nativeLanguage}
 
-Return ONLY valid JSON:
+Return ONLY valid JSON (no markdown, no extra text):
 {
-  "ai_score": 0-100,
-  "ai_warning": "brief explanation in ${nativeLanguage} if score > 60, else null",
+  "ai_score": 35,
+  "ai_warning": null,
   "native_words": [
-    { "original": "the single native WORD as written (one word only, not a phrase)", "translation": "single ${language} equivalent word", "definition": "brief meaning in ${nativeLanguage}", "example": "example sentence in ${language}" }
+    { "original": "单词", "translation": "word", "definition": "brief meaning", "example": "short example" }
   ],
-  "feedback": "2-3 sentences of encouraging feedback in ${nativeLanguage}",
-  "strengths": ["strength in ${nativeLanguage}"],
-  "suggestions": ["suggestion in ${nativeLanguage}"]
+  "feedback": "short feedback in ${nativeLanguage}",
+  "strengths": ["one strength"],
+  "suggestions": ["one suggestion"]
 }`;
 
-  const result = await callGemini(aiPrompt);
+  const result = await callGemini(aiPrompt, 1200, true);
   if (result.error) return res.status(503).json({ error: result.error });
   try {
-    let t = result.text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    res.json(JSON.parse(t.match(/\{[\s\S]*\}/)[0]));
-  } catch {
-    res.status(500).json({ error: 'Failed to analyse writing.' });
+    res.json(parseAiJson(result.text));
+  } catch (e) {
+    console.error('[lang/writing] parse failed:', e.message, '\nRaw:', result.text?.slice(0, 300));
+    res.status(500).json({ error: 'Failed to analyse writing. Please try again with slightly shorter text.' });
   }
 });
 
