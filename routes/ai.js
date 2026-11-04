@@ -5,65 +5,34 @@ const { authMiddleware } = require('../middleware/auth');
 const { awardXP } = require('../lib/xp');
 const db = require('../db');
 
-// ── AI Rate Limiting ───────────────────────────────────────────────────────
-const aiUsage = {};
-const AI_LIMITS = { tutor: 20, quiz_generate: 5, flashcard_generate: 10, planner: 3 };
+// Daily AI caps disabled — middleware kept for route compatibility
+const AI_ACTIONS = ['tutor', 'quiz_generate', 'flashcard_generate', 'planner'];
 
-function getToday() { return new Date().toISOString().slice(0, 10); }
-
-function checkAiLimit(action) {
+function checkAiLimit(_action) {
   return (req, res, next) => {
-    if (req.user.isAdmin) {
-      res.setHeader('X-AI-Used', 0);
-      res.setHeader('X-AI-Limit', 'unlimited');
-      res.setHeader('X-AI-Remaining', 'unlimited');
-      return next();
-    }
-    const key = `${req.user.id}_${action}_${getToday()}`;
-    const used = aiUsage[key] || 0;
-    const limit = AI_LIMITS[action];
-    if (used >= limit) {
-      return res.status(429).json({
-        error: `Daily limit reached. You can use ${action.replace('_', ' ')} ${limit} times per day. Resets at midnight.`,
-        used, limit, remaining: 0,
-      });
-    }
-    aiUsage[key] = used + 1;
-    res.setHeader('X-AI-Used', aiUsage[key]);
-    res.setHeader('X-AI-Limit', limit);
-    res.setHeader('X-AI-Remaining', limit - aiUsage[key]);
+    res.setHeader('X-AI-Limit', 'unlimited');
+    res.setHeader('X-AI-Remaining', 'unlimited');
     next();
   };
 }
 
 // GET /api/ai/usage
 router.get('/usage', authMiddleware, (req, res) => {
-  if (req.user.isAdmin) {
-    const usage = {};
-    for (const action of Object.keys(AI_LIMITS)) {
-      usage[action] = { used: 0, limit: 'unlimited', remaining: 'unlimited' };
-    }
-    return res.json(usage);
-  }
-  const today = getToday();
   const usage = {};
-  for (const [action, limit] of Object.entries(AI_LIMITS)) {
-    const used = aiUsage[`${req.user.id}_${action}_${today}`] || 0;
-    usage[action] = { used, limit, remaining: limit - used };
+  for (const action of AI_ACTIONS) {
+    usage[action] = { used: 0, limit: 'unlimited', remaining: 'unlimited' };
   }
   res.json(usage);
 });
 
-// POST /api/ai/tutor — no daily limit, input capped at 2000 chars, output capped at 800 tokens
+// POST /api/ai/tutor
 router.post('/tutor', authMiddleware, async (req, res) => {
-  let { question } = req.body;
+  const { question } = req.body;
   if (!question) return res.status(400).json({ error: 'Question required' });
-  // Cap input
-  if (question.length > 2000) question = question.slice(0, 2000);
   const prompt = `You are a helpful, friendly AI assistant. Answer the following question clearly and accurately. Be concise but thorough. If it's a factual or academic question, explain it well. If it's casual conversation, respond naturally.
 
 Question: ${question}`;
-  const result = await callGemini(prompt, 800);
+  const result = await callGemini(prompt);
   if (result.error) return res.status(503).json({ error: result.error });
   await awardXP(req.user.id, 5);
   res.json({ answer: result.text });

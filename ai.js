@@ -3,8 +3,10 @@ const https = require('https');
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+/** Max completion tokens (gpt-4o-mini output cap). No app-level output trimming below this. */
+const MAX_OUTPUT_TOKENS = 16384;
 
-async function callGemini(prompt, maxTokens = 1500, jsonMode = false) {
+async function callGemini(prompt, maxTokens = MAX_OUTPUT_TOKENS, jsonMode = false) {
   if (!OPENAI_KEY) {
     return { error: 'No AI API key configured. Add OPENAI_API_KEY to .env' };
   }
@@ -36,11 +38,7 @@ async function callGemini(prompt, maxTokens = 1500, jsonMode = false) {
         try {
           const json = JSON.parse(data);
           if (json.error) return resolve({ error: json.error.message });
-          const choice = json.choices?.[0];
-          if (choice?.finish_reason === 'length') {
-            return resolve({ error: 'AI response was cut off. Try shorter writing or fewer words to analyse.' });
-          }
-          const text = choice?.message?.content;
+          const text = json.choices?.[0]?.message?.content;
           resolve({ text: text || 'No response from AI.' });
         } catch {
           resolve({ error: 'Failed to parse AI response.' });
@@ -69,7 +67,7 @@ async function callGeminiVision(prompt, base64Image, mimeType = 'image/jpeg') {
       ]
     }],
     temperature: 0.2,
-    max_tokens: 2000,
+    max_tokens: MAX_OUTPUT_TOKENS,
   });
 
   return new Promise((resolve) => {
@@ -102,4 +100,4 @@ async function callGeminiVision(prompt, base64Image, mimeType = 'image/jpeg') {
   });
 }
 
-module.exports = { callGemini, callGeminiVision };
+module.exports = { callGemini, callGeminiVision, MAX_OUTPUT_TOKENS };

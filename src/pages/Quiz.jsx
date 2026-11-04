@@ -29,7 +29,7 @@ export default function Quiz() {
       setQuestions(res.questions)
       setAnswers({})
       setStep('quiz')
-      setRemaining(r => r !== null ? r - 1 : null)
+      setRemaining(r => (typeof r === 'number' ? r - 1 : r))
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -50,12 +50,12 @@ export default function Quiz() {
     <div className="max-w-xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">🧪 Quiz Generator</h1>
-        {remaining !== null && (
+        {remaining !== null && remaining !== 'unlimited' && typeof remaining === 'number' && (
           <span className={`text-sm px-3 py-1 rounded-full font-medium
             ${remaining <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
             : remaining <= 3 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
             : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-            {remaining} / 5 quizzes left today
+            {remaining} quizzes left today
           </span>
         )}
       </div>

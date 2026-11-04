@@ -31,6 +31,14 @@ export default function MemoryType() {
     return () => clearInterval(timerRef.current)
   }, [step, startTime])
 
+  useEffect(() => {
+    function onKey(e) {
+      if (step === 'revealed' && e.key === 'Enter') { e.preventDefault(); doRestart() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [step])
+
   function focusInput() {
     // iOS Safari requires focus() to be called synchronously in a user gesture
     inputRef.current?.focus()
@@ -78,6 +86,7 @@ export default function MemoryType() {
   }
 
   function handleKeyDown(e) {
+    if (step === 'revealed' && e.key === 'Enter') { e.preventDefault(); doRestart(); return }
     if (step !== 'game') return
     if (e.key === 'Enter') { e.preventDefault(); processChar('\n') }
     // On iOS, keydown fires with the actual key for hardware keyboards
@@ -201,6 +210,7 @@ export default function MemoryType() {
         <button onClick={doRestart} className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2.5 rounded-xl transition">
           🔄 Restart from Beginning
         </button>
+        <p className="text-xs text-gray-500 mt-1">or press Enter to restart</p>
       </div>
       <div className="card font-mono text-base leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200 select-text">
         {rawText.trim()}

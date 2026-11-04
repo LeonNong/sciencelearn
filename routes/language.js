@@ -216,13 +216,13 @@ Return ONLY valid JSON (no markdown, no extra text):
   "suggestions": ["one suggestion"]
 }`;
 
-  const result = await callGemini(aiPrompt, 1200, true);
+  const result = await callGemini(aiPrompt, undefined, true);
   if (result.error) return res.status(503).json({ error: result.error });
   try {
     res.json(parseAiJson(result.text));
   } catch (e) {
     console.error('[lang/writing] parse failed:', e.message, '\nRaw:', result.text?.slice(0, 300));
-    res.status(500).json({ error: 'Failed to analyse writing. Please try again with slightly shorter text.' });
+    res.status(500).json({ error: 'Failed to analyse writing. Please try again.' });
   }
 });
 

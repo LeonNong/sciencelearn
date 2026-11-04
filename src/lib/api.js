@@ -1,7 +1,7 @@
 const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3002') + '/api'
 const getToken = () => localStorage.getItem('sl_token')
 
-async function req(path, options = {}, timeout = 60000) {
+async function req(path, options = {}, timeout = 300000) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeout)
   try {
@@ -32,7 +32,6 @@ async function req(path, options = {}, timeout = 60000) {
   }
 }
 
-// AI requests get a longer timeout (90s)
 const post = (path, body, timeout) => req(path, { method: 'POST', body: JSON.stringify(body) }, timeout)
 const patch = (path, body) => req(path, { method: 'PATCH', body: JSON.stringify(body) })
 const del = (path) => req(path, { method: 'DELETE' })
@@ -47,17 +46,17 @@ export const api = {
   dashboard: () => req('/dashboard'),
   leaderboard: () => req('/leaderboard'),
   // AI
-  tutor: (d) => post('/ai/tutor', d, 90000),
-  generateQuiz: (d) => post('/ai/quiz/generate', d, 90000),
-  checkQuiz: (d) => post('/ai/quiz/check', d, 90000),
+  tutor: (d) => post('/ai/tutor', d),
+  generateQuiz: (d) => post('/ai/quiz/generate', d),
+  checkQuiz: (d) => post('/ai/quiz/check', d),
   // Flashcards
   getFlashcards: () => req('/flashcards'),
   createFlashcard: (d) => post('/flashcards', d),
-  generateFlashcards: (d) => post('/flashcards/generate', d, 90000),
+  generateFlashcards: (d) => post('/flashcards/generate', d),
   reviewFlashcard: (id, quality) => patch(`/flashcards/${id}/review`, { quality }),
   deleteFlashcard: (id) => del(`/flashcards/${id}`),
   // Planner
-  generatePlan: (d) => post('/planner/generate', d, 90000),
+  generatePlan: (d) => post('/planner/generate', d),
   getPlans: () => req('/planner'),
   // Sessions
   logSession: (d) => post('/sessions', d),
@@ -68,7 +67,7 @@ export const api = {
   createLareTopic: (d) => post('/lare', d),
   updateLareTopic: (id, d) => patch(`/lare/${id}`, d),
   deleteLareTopic: (id) => del(`/lare/${id}`),
-  generateLareContent: (id) => post(`/lare/${id}/generate`, {}, 90000),
+  generateLareContent: (id) => post(`/lare/${id}/generate`, {}),
   recordLareQuiz: (id, d) => post(`/lare/${id}/quiz-result`, d),
   // Feedback
   submitFeedback: (text) => post('/feedback', { text }),
@@ -85,13 +84,13 @@ export const api = {
   deleteGrade: (id) => del(`/grades/${id}`),
   // Language Learning
   getLangVocab: () => req('/lang/vocab'),
-  generateVocab: (d) => post('/lang/vocab/generate', d, 30000),
-  refreshVocab: (id) => post(`/lang/vocab/${id}/refresh`, {}, 30000),
+  generateVocab: (d) => post('/lang/vocab/generate', d),
+  refreshVocab: (id) => post(`/lang/vocab/${id}/refresh`, {}),
   reviewVocab: (id, quality) => patch(`/lang/vocab/${id}/review`, { quality }),
   deleteVocab: (id) => del(`/lang/vocab/${id}`),
-  langQuiz: (d) => post('/lang/quiz', d, 60000),
-  langGrammar: (d) => post('/lang/grammar', d, 60000),
-  langWriting: (d) => post('/lang/writing', d, 60000),
+  langQuiz: (d) => post('/lang/quiz', d),
+  langGrammar: (d) => post('/lang/grammar', d),
+  langWriting: (d) => post('/lang/writing', d),
   langProgress: () => req('/lang/progress'),
   getRooms: () => req('/rooms'),
   createRoom: (d) => post('/rooms', d),
