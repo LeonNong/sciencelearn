@@ -65,7 +65,7 @@ export default function MemoryType() {
     setHintChar(false)
     setRestarts(r => r + 1)
     setStep('game')
-    inputRef.current?.focus()
+    setTimeout(() => inputRef.current?.focus(), 50)
   }
 
   function flashHint() {
