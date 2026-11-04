@@ -44,8 +44,25 @@ export default function MemoryType() {
     inputRef.current?.focus()
   }
 
+  function normalizePunctuation(str) {
+    return str
+      .replace(/\u2018|\u2019|\u201A|\u201B/g, "'")   // curly single quotes → '
+      .replace(/\u201C|\u201D|\u201E|\u201F/g, '"')   // curly double quotes → "
+      .replace(/\u2013/g, '-')                         // en dash → -
+      .replace(/\u2014/g, '--')                        // em dash → --
+      .replace(/\u2026/g, '...')                       // ellipsis → ...
+      .replace(/\uFF0C/g, ',')                         // ，→ ,
+      .replace(/\u3002/g, '.')                         // 。→ .
+      .replace(/\uFF01/g, '!')                         // ！→ !
+      .replace(/\uFF1F/g, '?')                         // ？→ ?
+      .replace(/\uFF1A/g, ':')                         // ：→ :
+      .replace(/\uFF1B/g, ';')                         // ；→ ;
+      .replace(/\u300C|\u300D|\u300E|\u300F/g, '"')   // 「」『』→ "
+      .replace(/\uFF08/g, '(').replace(/\uFF09/g, ')') // （）→ ()
+  }
+
   function startGame() {
-    const cleaned = rawText.trim()
+    const cleaned = normalizePunctuation(rawText.trim())
     if (!cleaned) return
     setTokens(cleaned.split(''))
     setCursor(0)
