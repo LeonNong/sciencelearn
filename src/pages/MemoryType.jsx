@@ -250,7 +250,12 @@ export default function MemoryType() {
         <div className="flex gap-2" role="group" aria-label="Input mode">
           {['keyboard', 'handwriting'].map(mode => (
             <button key={mode} type="button" aria-pressed={inputMode === mode}
-              onClick={() => { setInputMode(mode); setDraft(''); composing.current = false }}
+              onClick={() => {
+                if (mode !== inputMode) setDraft('')
+                composing.current = false
+                flushSync(() => setInputMode(mode))
+                inputRef.current?.focus({ preventScroll: true })
+              }}
               className={`px-4 py-2 rounded-lg text-sm ${inputMode === mode ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
               {mode === 'keyboard' ? 'Keyboard' : 'Apple Pencil / Handwriting'}
             </button>
@@ -270,7 +275,14 @@ export default function MemoryType() {
             if (inputMode === 'keyboard') submitText(e.currentTarget.value)
           }}
           className="input w-full text-base min-h-32"
-          rows={4}
+          // Declare this before a stroke begins; cancelling pointer events can
+          // interfere with native Scribble. Keep pinch zoom available.
+          style={inputMode === 'handwriting' ? {
+            touchAction: 'pinch-zoom',
+            overscrollBehavior: 'contain',
+            minHeight: '14rem',
+          } : undefined}
+          rows={inputMode === 'handwriting' ? 7 : 4}
           aria-describedby="memory-input-help"
           autoComplete="off"
           autoCorrect="off"
@@ -279,7 +291,7 @@ export default function MemoryType() {
         />
         <p id="memory-input-help" className="text-xs text-gray-500 dark:text-gray-400">
           {inputMode === 'handwriting'
-            ? 'Write inside the box with Apple Pencil and Scribble enabled. Correct the recognised text, including spaces and punctuation, then check it. You can submit part of the passage at a time.'
+            ? 'Write inside this answer box, not on the passage above. Enable Scribble in iPad Settings > Apple Pencil. Scroll the page outside the box. Correct the recognised text, including spaces and punctuation, then check it. You can submit part of the passage at a time.'
             : 'Characters are checked as you type. For Apple Pencil, select Handwriting above.'}
         </p>
         {inputMode === 'handwriting' && (
