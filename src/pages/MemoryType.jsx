@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
+import { evaluateText } from '../lib/memoryInput.mjs'
 
 const DIFFICULTIES = [
   { level: 1, label: 'Easy',   desc: 'Current character always shown' },
@@ -18,6 +20,9 @@ export default function MemoryType() {
   const [flash, setFlash] = useState(null)
   const [startTime, setStartTime] = useState(null)
   const [elapsed, setElapsed] = useState(0)
+  const [inputMode, setInputMode] = useState('keyboard')
+  const [draft, setDraft] = useState('')
+  const composing = useRef(false)
   const inputRef = useRef(null)
   const timerRef = useRef(null)
   const hintTimer = useRef(null)
@@ -71,9 +76,11 @@ export default function MemoryType() {
     setHintChar(false)
     setStartTime(Date.now())
     setElapsed(0)
-    setStep('game')
-    // focus immediately (called from button click — valid user gesture on iOS)
-    inputRef.current?.focus()
+    setRestarts(0)
+    setDraft('')
+    composing.current = false
+    flushSync(() => setStep('game'))
+    focusInput()
   }
 
   function doRestart() {
@@ -81,8 +88,10 @@ export default function MemoryType() {
     setFlash(null)
     setHintChar(false)
     setRestarts(r => r + 1)
-    setStep('game')
-    setTimeout(() => inputRef.current?.focus(), 50)
+    setDraft('')
+    composing.current = false
+    flushSync(() => setStep('game'))
+    focusInput()
   }
 
   function flashHint() {
@@ -92,49 +101,24 @@ export default function MemoryType() {
   }
 
   function handleInput(e) {
-    if (step !== 'game') return
-    const val = e.target.value
-    if (!val) return
-    // Process every character in the value (handles paste & autocomplete)
-    const ch = val[val.length - 1]
-    // Clear the input so iOS doesn't accumulate text
-    e.target.value = ''
-    processChar(ch)
+    const value = e.currentTarget.value
+    setDraft(value)
+    if (inputMode === 'handwriting' || composing.current || e.nativeEvent.isComposing) return
+    submitText(value)
   }
 
-  function handleKeyDown(e) {
-    if (step === 'revealed' && e.key === 'Enter') { e.preventDefault(); doRestart(); return }
-    if (step !== 'game') return
-    if (e.key === 'Enter') { e.preventDefault(); processChar('\n') }
-    // On iOS, keydown fires with the actual key for hardware keyboards
-    if (e.key && e.key.length === 1) {
-      e.preventDefault()
-      processChar(e.key)
-    }
-  }
-
-  function processChar(typed) {
-    const expected = tokens[cursor]
-    if (typed === expected) {
-      setFlash('correct')
-      setTimeout(() => setFlash(null), 100)
-      const next = cursor + 1
-      if (next >= tokens.length) {
-        clearInterval(timerRef.current)
-        setStep('complete')
-        return
-      }
-      setCursor(next)
-      if (difficulty === 2) flashHint()
-    } else {
-      setMistakes(m => m + 1)
-      setFlash('wrong')
-      setTimeout(() => setFlash(null), 300)
-      if (difficulty === 2) flashHint()
-      if (difficulty === 3) {
-        clearInterval(timerRef.current)
-        setStep('revealed')
-      }
+  function submitText(value) {
+    if (step !== 'game' || composing.current || !value) return
+    const result = evaluateText(tokens, cursor, normalizePunctuation(value), difficulty)
+    setCursor(result.cursor)
+    setMistakes(m => m + result.mistakes)
+    setDraft('')
+    setFlash(result.mistakes ? 'wrong' : 'correct')
+    setTimeout(() => setFlash(null), result.mistakes ? 300 : 100)
+    if (difficulty === 2) flashHint()
+    if (result.step !== 'game') {
+      clearInterval(timerRef.current)
+      setStep(result.step)
     }
   }
 
@@ -262,25 +246,47 @@ export default function MemoryType() {
         {difficulty === 2 && '💡 All hidden — next char flashes briefly on correct or wrong'}
         {difficulty === 3 && '⚠️ One mistake shows full text — restart manually'}
       </p>
-      <input
-        ref={inputRef}
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        className="opacity-0 fixed top-0 left-0 w-1 h-1 pointer-events-none"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="none"
-        spellCheck="false"
-        type="text"
-        inputMode="text"
-        readOnly={false}
-      />
-      <button
-        onClick={() => inputRef.current?.focus()}
-        className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-400 text-sm lg:hidden"
-      >
-        Tap here to type ⌨️
-      </button>
+      <div className="card mt-4 space-y-3">
+        <div className="flex gap-2" role="group" aria-label="Input mode">
+          {['keyboard', 'handwriting'].map(mode => (
+            <button key={mode} type="button" aria-pressed={inputMode === mode}
+              onClick={() => { setInputMode(mode); setDraft(''); composing.current = false }}
+              className={`px-4 py-2 rounded-lg text-sm ${inputMode === mode ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}>
+              {mode === 'keyboard' ? 'Keyboard' : 'Apple Pencil / Handwriting'}
+            </button>
+          ))}
+        </div>
+        <label htmlFor="memory-answer" className="label">
+          {inputMode === 'handwriting' ? 'Write your answer here' : 'Type your answer here'}
+        </label>
+        <textarea
+          id="memory-answer"
+          ref={inputRef}
+          value={draft}
+          onChange={handleInput}
+          onCompositionStart={() => { composing.current = true }}
+          onCompositionEnd={e => {
+            composing.current = false
+            if (inputMode === 'keyboard') submitText(e.currentTarget.value)
+          }}
+          className="input w-full text-base min-h-32"
+          rows={4}
+          aria-describedby="memory-input-help"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+        />
+        <p id="memory-input-help" className="text-xs text-gray-500 dark:text-gray-400">
+          {inputMode === 'handwriting'
+            ? 'Write inside the box with Apple Pencil and Scribble enabled. Correct the recognised text, including spaces and punctuation, then check it. You can submit part of the passage at a time.'
+            : 'Characters are checked as you type. For Apple Pencil, select Handwriting above.'}
+        </p>
+        {inputMode === 'handwriting' && (
+          <button type="button" onClick={() => submitText(draft)} disabled={!draft}
+            className="btn-primary w-full py-3">Check answer</button>
+        )}
+      </div>
     </div>
   )
 }
